@@ -17,7 +17,9 @@ class UiConsistencyTest {
     private val repoRoot = File("").absoluteFile.let { if (it.name.startsWith("ui-")) it.parentFile else it }
     private val patterns = parsePatterns(File(repoRoot, "ui-forbidden.txt").readText())
     private val allowlist by lazy { parseAllowlist(File(repoRoot, "ui-allowlist.txt").readText()) }
-    private val production = Konsist.scopeFromProduction(moduleName = "ui-components") + Konsist.scopeFromProduction(moduleName = "ui-theme")
+    private val production = Konsist.scopeFromProduction(moduleName = "ui-components") +
+        Konsist.scopeFromProduction(moduleName = "ui-theme") +
+        Konsist.scopeFromProduction(moduleName = "ui-common")
 
     @Test
     fun `mönsterfilen har alla scope och en ersättning per mönster`() {
@@ -28,7 +30,7 @@ class UiConsistencyTest {
     @Test
     fun `ingen kod i bibliotekets main använder förbjudna mönster`() {
         val files = production.files.toList()
-        assertTrue(files.any { it.path.contains("/ui-theme/") } && files.any { it.path.contains("/ui-components/") }, "hittade inte båda modulerna")
+        assertTrue(listOf("/ui-theme/", "/ui-components/", "/ui-common/").all { module -> files.any { it.path.contains(module) } }, "hittade inte alla moduler")
         val hits = files.flatMap { file ->
             val rel = File(file.path).relativeTo(repoRoot).invariantSeparatorsPath
             findViolations(rel, file.text).map { (line, match, replacement) -> "  $rel:$line  `${match.trim()}`  → använd $replacement" }
@@ -49,6 +51,7 @@ class UiConsistencyTest {
     fun `scope per sökväg`() {
         assertEquals(listOf("components", "expressive"), scopesFor("ui-components/src/main/kotlin/se/partee71/ui/components/X.kt"))
         assertEquals(listOf("theme", "expressive"), scopesFor("ui-theme/src/main/kotlin/se/partee71/ui/theme/X.kt"))
+        assertEquals(listOf("expressive"), scopesFor("ui-common/src/main/kotlin/se/partee71/ui/common/X.kt"))
         assertEquals(emptyList(), scopesFor("ui-components/src/test/kotlin/se/partee71/ui/components/X.kt"))
     }
 
@@ -71,10 +74,12 @@ class UiConsistencyTest {
         ).forEach { assertEquals(emptyList(), findViolations(file, it), it) }
     }
 
+    /** En komponent ritar något: en publik `@Composable` som returnerar `Unit`. En som ger ett värde (t.ex. `chipColors()`) är ingen komponent. */
     @Test
     fun `varje publik komponent har skärmdump ljust och mörkt och står i README`() {
         val components = production.functions()
             .filter { it.resideInPackage("..ui.components..") && it.hasPublicOrDefaultModifier && it.hasAnnotationWithName("Composable") }
+            .filter { it.returnType.let { type -> type == null || type.name == "Unit" } }
             .map { it.name }
             .toSet()
         assertTrue(components.isNotEmpty(), "hittade inga komponenter")
