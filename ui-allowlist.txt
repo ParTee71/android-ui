@@ -1,0 +1,3 @@
+# Undantag från ui-forbidden.txt. Format: <sökväg relativt repots rot>:<symbol> – <motivering>
+# Varje ny rad kräver användarens uttryckliga ok i PR:en.
+ui-components/src/main/kotlin/se/partee71/ui/components/AppLoading.kt:ExperimentalMaterial3ExpressiveApi – LoadingIndicator är experimentell i material3 1.5.0-beta01; kompilatorn kräver opt-in

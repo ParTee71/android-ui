@@ -1,0 +1,18 @@
+# Lokal konfiguration och hemligheter – checkas aldrig in
+local.properties
+*.jks
+*.keystore
+.env
+.env.*
+.claude/settings.local.json
+
+# Gradle och byggutdata
+.gradle/
+.kotlin/
+build/
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+captures/

@@ -1,0 +1,40 @@
+# Publicerar ui-theme och ui-components till GitHub Packages när en tagg v<version> pushas.
+# Taggen måste stämma med version i gradle.properties. Testerna har redan körts i PR:en.
+name: Publicera
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-android
+
+      - name: Taggen stämmer med versionen
+        run: |
+          set -euo pipefail
+          version="$(grep -E '^version=' gradle.properties | cut -d= -f2)"
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Taggen $GITHUB_REF_NAME stämmer inte med version=$version i gradle.properties"
+            exit 1
+          fi
+
+      - name: Publicera till GitHub Packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Utan configuration cache: första körningen på en tom maskin föll lokalt en gång på
+        # serialiseringen av lint-klassvägen i extractReleaseAnnotations (AGP 9.4.1).
+        run: ./gradlew --no-configuration-cache publishAllPublicationsToGitHubPackagesRepository

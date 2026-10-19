@@ -1,0 +1,25 @@
+# Förbjudna mönster för regel 4 i biblioteket – enda källan. Läses av UiConsistencyTest.
+# Format per rad: <regex><TAB><vad som ska användas i stället>
+# [components] = Kotlin under ui-components/src/main – utseendet kommer från temat (AppTheme), aldrig hårdkodat.
+# [theme]      = Kotlin under ui-theme/src/main – temat har inga egna färger; dem skickar appen in.
+# [expressive] = all Kotlin under */src/main – Expressive-opt-in bara där kompilatorn kräver den (undantag i ui-allowlist.txt).
+# Regexarna är samma som apparnas ui-forbidden.txt där de gäller samma sak.
+
+[components]
+\bColor\(	MaterialTheme.colorScheme / AppTheme.extendedColors
+\bColor\.[A-Z][A-Za-z]*	MaterialTheme.colorScheme / AppTheme.extendedColors
+\bRoundedCornerShape\(	AppTheme.shapes
+\bCutCornerShape\(	AppTheme.shapes
+\bCircleShape\b	AppTheme.shapes.pill
+\bTextStyle\(	AppTheme.typography
+\bMaterialTheme\.typography\b	AppTheme.typography
+\b(fontSize|fontWeight|lineHeight|letterSpacing)\s*=	AppTheme.typography
+\.(height|width|size|clip|requiredHeight|requiredWidth|requiredSize)\(\s*[0-9]+(\.[0-9]+)?\.dp	en namngiven konstant eller Spacing
+\bpadding\([^)]*[0-9]+(\.[0-9]+)?\.dp	Spacing
+
+[theme]
+\bColor\(	färgen i appens ExtendedColors / ColorScheme
+\bColor\.[A-Z][A-Za-z]*	färgen i appens ExtendedColors / ColorScheme
+
+[expressive]
+\bExperimentalMaterial3ExpressiveApi\b	stabilt API, eller ett motiverat undantag i ui-allowlist.txt
