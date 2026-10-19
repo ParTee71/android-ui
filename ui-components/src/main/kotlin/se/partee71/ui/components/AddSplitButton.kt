@@ -30,7 +30,7 @@ import se.partee71.ui.theme.Spacing
  * "Lägg till ▾": huvudåtgärden och, om [menu] finns, en pil med fler val. Utan meny
  * blir den en vanlig sekundär [AppButton] med plus – samma plats och utseende.
  *
- * [menu] ritar appens meny (t.ex. `AppMenuPopup(items, expanded, onDismiss)`), förankrad under knappen:
+ * [menu] ritar menyn (vanligen `items.asSplitMenu()`, som visar [AppMenuPopup]), förankrad under knappen:
  * den får om menyn är öppen och vad som stänger den.
  */
 @Composable

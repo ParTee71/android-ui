@@ -16,4 +16,23 @@
     <string name="decrease_format">Minska %s</string>
     <string name="increase_format">Öka %s</string>
     <string name="pick_time">Välj tid</string>
+    <string name="pick_date">Välj datum</string>
+    <!-- DateField(onClear): "Till periodens slut" -->
+    <string name="date_clear_format">Till %s</string>
+    <!-- Ett fält som finns flera gånger på skärmen, för TalkBack: "Startdatum, doshöjning 2" -->
+    <string name="field_in_context_format">%1$s, %2$s</string>
+    <string name="paused">Pausat</string>
+    <string name="paused_note">Pausat – räknas inte med</string>
+    <plurals name="suggestions_count">
+        <item quantity="one">%d förslag</item>
+        <item quantity="other">%d förslag</item>
+    </plurals>
+    <string name="close">Stäng</string>
+    <string name="note_show">Visa anteckning</string>
+    <string name="delete">Radera</string>
+    <string name="delete_title_format">Radera %s?</string>
+    <string name="discard_title">Släng ändringar?</string>
+    <string name="discard_message">Det du ändrat sparas inte.</string>
+    <string name="discard_confirm">Släng</string>
+    <string name="keep_editing">Fortsätt redigera</string>
 </resources>

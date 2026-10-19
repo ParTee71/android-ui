@@ -17,7 +17,7 @@ val ktlintRules = mapOf(
     "ktlint_code_style" to "android_studio",
     "max_line_length" to "off",
     "ktlint_function_naming_ignore_when_annotated_with" to "Composable",
-    "compose_allowed_composition_locals" to "LocalExtendedColors,LocalAppShapes,LocalAppTypography,LocalTopBarStatus",
+    "compose_allowed_composition_locals" to "LocalExtendedColors,LocalAppShapes,LocalAppTypography,LocalTopBarStatus,LocalItemRowTextGap,LocalBottomClearance",
     // Samma undantag som i apparna: komponenternas API flyttas oförändrat (ingen app får ändras här).
     "ktlint_compose_parameter-naming" to "disabled",
     "ktlint_compose_lambda-param-event-trailing" to "disabled",
