@@ -37,7 +37,7 @@ spotless {
     }
 }
 
-// Gemensam byggkonfiguration för alla moduler (:ui-theme, :ui-common, :ui-components) – enda stället. Modulfilerna har bara det som är unikt.
+// Gemensam byggkonfiguration för alla moduler (:ui-theme, :ui-common, :ui-components, :ui-testing) – enda stället. Modulfilerna har bara det som är unikt.
 val javaVersion = JavaVersion.VERSION_17
 val githubPackages = "https://maven.pkg.github.com/ParTee71/android-ui"
 

@@ -86,3 +86,10 @@ object SampleSwatches {
 
     fun label(hex: String): String = "Färg: ${names.getOrElse(hexes.indexOfFirst { it.equals(hex, ignoreCase = true) }) { "" }}"
 }
+
+/** Appens felöversättning i testerna – som ReseApotekets `AppErrors`: allt okänt blir "offline"-texten här. */
+object SampleErrors : se.partee71.ui.common.ErrorMapper {
+    override fun map(error: Throwable): UiError = UiError(error, R.string.sample_error_offline)
+
+    override fun notFound(): UiError = sampleNotFound()
+}

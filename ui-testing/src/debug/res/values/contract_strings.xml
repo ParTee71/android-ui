@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texter bara för modulens egna tester (debug-varianten, som inte publiceras) – i en app kommer felen från appen. -->
+<resources>
+    <string name="contract_error_offline">Ingen anslutning just nu.</string>
+    <string name="contract_error_not_found">Det finns inte längre.</string>
+    <string name="contract_error_unknown">Något gick fel.</string>
+    <string name="contract_error_required">Ange ett namn</string>
+</resources>
