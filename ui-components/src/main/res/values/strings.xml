@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Bibliotekets texter, på svenska. En app som har en sträng med samma namn i sina resurser
+  ersätter bibliotekets (Androids resurssammanslagning) – samma gäller ikonerna i res/drawable.
+-->
+<resources>
+    <string name="more_options">Fler val</string>
+    <string name="loading">Laddar</string>
+    <string name="back">Tillbaka</string>
+    <string name="archive">Arkivera</string>
+</resources>

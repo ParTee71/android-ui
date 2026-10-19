@@ -1,0 +1,47 @@
+# Alla versioner på ett ställe – i takt med ReseApoteket och Dagboken (samma värden som deras
+# gradle/libs.versions.toml). Höj här i samma takt som apparna, annars får appen två versioner
+# av Compose/Material 3 på klassvägen.
+
+[versions]
+agp                      = "9.4.1"
+kotlin                   = "2.4.20"
+composeBom               = "2026.09.00"
+material3                = "1.5.0-beta01"   # Expressive är internal i stabila 1.4.0
+junit                    = "4.13.2"
+robolectric              = "4.17"
+roborazzi                = "1.76.0"
+konsist                  = "0.17.3"
+concurrentFutures        = "1.2.0"
+errorProneAnnotations    = "2.30.0"
+pmd                      = "7.28.0"
+spotless                 = "8.10.4"
+ktlint                   = "1.8.0"
+composeRules             = "0.6.8"
+
+[libraries]
+androidx-compose-bom                  = { group = "androidx.compose",            name = "compose-bom",                       version.ref = "composeBom" }
+androidx-compose-ui                   = { group = "androidx.compose.ui",         name = "ui" }
+androidx-compose-ui-graphics          = { group = "androidx.compose.ui",         name = "ui-graphics" }
+androidx-compose-ui-test-junit4       = { group = "androidx.compose.ui",         name = "ui-test-junit4" }
+androidx-compose-ui-test-manifest     = { group = "androidx.compose.ui",         name = "ui-test-manifest" }
+androidx-compose-material3            = { group = "androidx.compose.material3",  name = "material3",                         version.ref = "material3" }
+# Test
+junit                                 = { group = "junit",                       name = "junit",                             version.ref = "junit" }
+kotlin-test                           = { group = "org.jetbrains.kotlin",        name = "kotlin-test",                       version.ref = "kotlin" }
+robolectric                           = { group = "org.robolectric",             name = "robolectric",                       version.ref = "robolectric" }
+roborazzi                             = { group = "io.github.takahirom.roborazzi", name = "roborazzi",                       version.ref = "roborazzi" }
+roborazzi-compose                     = { group = "io.github.takahirom.roborazzi", name = "roborazzi-compose",               version.ref = "roborazzi" }
+roborazzi-junit-rule                  = { group = "io.github.takahirom.roborazzi", name = "roborazzi-junit-rule",            version.ref = "roborazzi" }
+konsist                               = { group = "com.lemonappdev",             name = "konsist",                           version.ref = "konsist" }
+errorprone-annotations                = { group = "com.google.errorprone",       name = "error_prone_annotations",           version.ref = "errorProneAnnotations" }
+androidx-concurrent-futures           = { group = "androidx.concurrent",         name = "concurrent-futures",                version.ref = "concurrentFutures" }
+# Copy-paste-detektor (cpdCheck i rotens build.gradle.kts)
+pmd-cli                               = { group = "net.sourceforge.pmd",         name = "pmd-cli",                           version.ref = "pmd" }
+pmd-kotlin                            = { group = "net.sourceforge.pmd",         name = "pmd-kotlin",                        version.ref = "pmd" }
+compose-rules-ktlint                  = { group = "io.nlopez.compose.rules",     name = "ktlint",                            version.ref = "composeRules" }
+
+[plugins]
+android-library      = { id = "com.android.library",                       version.ref = "agp" }
+kotlin-compose       = { id = "org.jetbrains.kotlin.plugin.compose",       version.ref = "kotlin" }
+roborazzi            = { id = "io.github.takahirom.roborazzi",             version.ref = "roborazzi" }
+spotless             = { id = "com.diffplug.spotless",                     version.ref = "spotless" }

@@ -1,0 +1,42 @@
+# PR-flödet: ett jobb, inom ~8 Actions-minuter (CLAUDE.md → CI-budget). Kodstilen (spotless)
+# körs lokalt före push, inte här. Dokumentändringar hoppar över bygget.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+    paths-ignore: ['**.md']
+  push:
+    branches: [main]
+    paths-ignore: ['**.md']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-android
+
+      - name: Testa, jämför skärmdumpar och leta kopierad kod
+        run: ./gradlew --configuration-cache --continue testDebugUnitTest verifyRoborazziDebug cpdCheck
+
+      - name: Testrapporter och skärmdumpsdiffar
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: testrapporter
+          path: |
+            ui-*/build/reports/tests/
+            ui-*/build/outputs/roborazzi/
+            build/reports/cpd/
+          retention-days: 7
