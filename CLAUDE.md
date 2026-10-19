@@ -28,7 +28,7 @@ accessibility-compose, android-gradle-logic, implement-issue, refine-issue, rele
 5. **En PR i taget**, mot `main`. Nästa påbörjas först när den förra är mergad.
 6. **Versionen höjs i varje PR som ändrar biblioteket** (`version` i `gradle.properties`, raden i
    README:s versionshistorik): major = brytande API, minor = ny komponent/parameter, patch = fix.
-   Publicering: tagg `v<version>` på `main` (`publish.yml`).
+   Publicering: `publish.yml` på `main`, manuellt (skapar taggen `v<version>`) eller via pushad tagg.
 7. **Versionerna följer apparna:** Compose BOM, Material 3, Kotlin och AGP i
    `gradle/libs.versions.toml` ska vara desamma som i apparna.
 
