@@ -15,6 +15,9 @@ roborazzi {
 
 dependencies {
     api(project(":ui-theme"))
+    api(project(":ui-common"))
+    // TimeField tar och ger en LocalTime, som apparna.
+    api(libs.kotlinx.datetime)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlin.test)
@@ -27,9 +30,10 @@ dependencies {
     testImplementation(libs.konsist)
 }
 
-// UiConsistencyTest läser källorna i båda modulerna, regelfilerna och README i roten – en ändring där kör om testet.
+// UiConsistencyTest läser källorna i modulerna, regelfilerna och README i roten – en ändring där kör om testet.
 tasks.withType<Test>().configureEach {
     inputs.dir(rootProject.file("ui-theme/src/main")).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("themeSources")
+    inputs.dir(rootProject.file("ui-common/src/main")).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("commonSources")
     inputs.dir(file("src/main")).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("componentSources")
     inputs.files(rootProject.files("ui-forbidden.txt", "ui-allowlist.txt", "README.md"))
         .withPathSensitivity(PathSensitivity.RELATIVE)

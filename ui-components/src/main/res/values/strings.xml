@@ -8,4 +8,12 @@
     <string name="loading">Laddar</string>
     <string name="back">Tillbaka</string>
     <string name="archive">Arkivera</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Avbryt</string>
+    <string name="undo">Ångra</string>
+    <string name="archived_format">%s arkiverad</string>
+    <string name="retry">Försök igen</string>
+    <string name="decrease_format">Minska %s</string>
+    <string name="increase_format">Öka %s</string>
+    <string name="pick_time">Välj tid</string>
 </resources>

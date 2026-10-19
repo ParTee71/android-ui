@@ -5,7 +5,7 @@ eventuellt Fonder): ett tema-API och de delade komponenterna, så att samma elem
 beter sig likadant i alla appar och bara finns på ett ställe. Varje app behåller sina egna
 färger, former och typsnitt och skickar in dem i temat.
 
-**Version:** 0.1.0 · Material 3 `1.5.0-beta01` (Expressive) · Compose BOM `2026.09.00` ·
+**Version:** 0.2.0 · Material 3 `1.5.0-beta01` (Expressive) · Compose BOM `2026.09.00` ·
 Kotlin `2.4.20` · AGP `9.4.1` · compileSdk 37 · minSdk 30.
 
 ## Moduler
@@ -13,7 +13,8 @@ Kotlin `2.4.20` · AGP `9.4.1` · compileSdk 37 · minSdk 30.
 | Artefakt | Paket | Innehåll |
 |---|---|---|
 | `se.partee71.ui:ui-theme` | `se.partee71.ui.theme` | `AppTheme`, `Spacing`, `AppShapes`, `AppTypography`, `ExtendedColors`, `Tone`, `ToneColors` |
-| `se.partee71.ui:ui-components` | `se.partee71.ui.components` | komponenterna nedan (drar in `ui-theme`) |
+| `se.partee71.ui:ui-common` | `se.partee71.ui.common` | ramarnas tillstånd utan UI: `UiError`/`ErrorMapper`, `ListUiState`, `DetailUiState`, `EditorState`, `EditorLoader`, `shownAfter` |
+| `se.partee71.ui:ui-components` | `se.partee71.ui.components` | komponenterna nedan (drar in `ui-theme` och `ui-common`) |
 
 ## Lägga till i en app
 
@@ -37,7 +38,7 @@ dependencyResolutionManagement {
 }
 ```
 
-och i versionskatalogen/byggfilen `implementation("se.partee71.ui:ui-components:0.1.0")`.
+och i versionskatalogen/byggfilen `implementation("se.partee71.ui:ui-components:0.2.0")`.
 
 - **CI i appen:** `GITHUB_TOKEN` räcker när paketet gett apprepot läsåtkomst
   (paketets inställningar → *Manage Actions access*) och jobbet har `permissions: packages: read`.
@@ -89,21 +90,57 @@ fun ReseApoteketTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Comp
     )
 ```
 
+## ui-common
+
+Ren tillståndslogik för listor, detaljer och formulär – ingen Firestore, Hilt eller appkod.
+Testas med JUnit och Turbine.
+
+- **Fel:** `UiError(cause, message, retryable)` är det enda fel-API:t i ramarna. Appen skriver en
+  `ErrorMapper` en gång (`map(Throwable)` från `DataError`, `notFound()`). `UiError` jämförs på
+  identitet: samma fel två gånger i rad visas två gånger.
+- **Listor:** `ListUiState` (Loading, Empty, Content, Error), `asListUiState(errors[, retry])`,
+  `ListLoader`, `ListEvent.Retry`; detaljer: `DetailUiState`, `asDetailUiState`, `DetailLoader`.
+- **Formulär:** `EditorState` (validering, ändrat-läge, `saveUnchanged`, läsfel, spara/kör) och
+  `EditorLoader` (läsning, "Försök igen", `project`, `prepare`, `afterLoad`).
+- **`Flow<Boolean>.shownAfter(delay)`** – visar en indikator först efter en fördröjning.
+
 ## Komponenter
 
 | Komponent | Vad | Skillnad mot apparnas tidigare version |
 |---|---|---|
 | `AddSplitButton` | "Lägg till ▾" – huvudåtgärd och pil med fler val | Menyn är en lucka (`menu = { expanded, onDismiss -> AppMenuPopup(items, expanded, onDismiss) }`) i stället för `menuItems`, eftersom `AppMenu` ännu inte finns här |
 | `AppButton` | Den enda knappen: Primary, Secondary, Text, Destructive; `loading`, `compact` | – |
+| `AppCard` | Kortet: `tone`, `contentColor` (standard `null`: ärver omgivande `LocalContentColor`; Dagboken `onSurface`) | ReseApotekets `ApotekCard` heter nu `AppCard` |
 | `AppDivider` | Avdelare mellan rader i ett kort | – |
+| `AppFilterChip` | Filterchip; `icon`, `onLongClick` | `chipColors()` är publik för egna chips |
 | `AppIconButton` | Ikonknapp, minst 48 dp, alltid `contentDescription` | – |
 | `AppLoading` | Expressive laddningsindikator mitt på ytan | – |
 | `AppSegmentedChoice` | Ett val av få alternativ som segmentknappar | – |
 | `AppSnackbarHost` | Den enda platsen där meddelanden visas | – |
+| `AppTextField` | Det enda textfältet; `maxLength` (`AppTextFieldDefaults.SHORT_MAX_LENGTH` 200 / `LONG_MAX_LENGTH` 2000), `maxLines`, `suffix`, `valueIsPlaceholder` | Dagboken anger `maxLength = 5000` för långa fält |
 | `AppTopBar` | Skärmrubriken, stor eller liten | Synkindikatorn är appens: den sätts som `LocalTopBarStatus` (eller parametern `status`) |
+| `CardSegment` | Ett segment i ett sammanfogat kort (`top`, `bottom`), `contentColor` | – |
 | `ChipRow` | En rad chips som bryts eller rullar | – |
+| `ChoiceChips` | Ett val av flera som chips; `onClear` (Dagboken). Överlagring för flerval (`selected: Set<T>`, `onToggle`) | Flervalet är nytt (Dagboken #321) |
+| `ChoiceGrid` | Val i ett rutnät med egen cell; `selectionRing` (Dagboken: ring i primärfärg) | – |
+| `ColorSwatchPicker` | Färgval; `marker` krävs: `SwatchMarker.RingAndCheck(checkColor)` (ReseApoteket) eller `GridRing` (Dagboken) | `marker` saknar standard – bockens färg är appens |
 | `Confetti` | Kort konfettiregn som belöning | `colors` (standard `AppTheme.extendedColors.accents`) |
+| `EmptyState` | Tomt läge med ikon, rubrik, text och knapp; `compact` (Dagboken) | – |
+| `ErrorSnackbar` | Visar ett `UiError` en gång; `template` (t.ex. "Synken nekades: %1$s"), `duration` | Tar `UiError` i stället för appens `DataError` |
+| `ExampleChips` | Exempel att trycka in i ett fält | – |
+| `FieldError` | Felraden under ett fält | – |
+| `GroupLabel` | Etikett över en grupp | – |
+| `InfoPill` | Pill med ton; `trailingIcon`, `role`, `onClickLabel`, `colors` | – |
+| `LabeledGroup` | Etikett, hjälptext och innehåll; `helperAbove` (Dagboken) | – |
+| `LoadErrorState` | Läsfel med "Försök igen" (bara om `retryable`) | Tar `UiError` |
+| `MessageSnackbar` | Visar en text en gång i `AppSnackbarHost` | – |
+| `PickerField` | Fält som öppnar en väljare; `emptyLabel`, `contentLabel` | – |
+| `QuantityStepper` | − värde +; `step`, `valueText`, `buttonSize` (`QuantityStepperDefaults.ButtonSize` 44 dp, `TouchTargetButtonSize` 48 dp) | – |
+| `SectionHeader` | Sektionsrubrik med antal; `countTone` | – |
 | `SwipeToHide` | Arkivera/dölj med svep åt vänster, och samma åtgärd för TalkBack | – |
+| `TimeField` | Tidsfält (kotlinx `LocalTime`) som öppnar `TimePickerPopup` | – |
+| `TimePickerPopup` | Tidsväljaren som dialog | – |
+| `UndoSnackbar` | "Arkiverad – Ångra" för `UndoRequest`; `format`, `onRequestDismissed` | – |
 
 Strängarna (svenska) och ikonerna ligger i `ui-components/src/main/res`. En app som har en
 resurs med samma namn (t.ex. `ic_add` eller `more_options`) ersätter bibliotekets – så behåller
@@ -125,7 +162,7 @@ med ReseApotekets palett (`ui-components/src/test/.../testing/TestTheme.kt`).
 
 ## Publicering
 
-Versionen står i `gradle.properties` (`version=`). `.github/workflows/publish.yml` publicerar båda
+Versionen står i `gradle.properties` (`version=`). `.github/workflows/publish.yml` publicerar alla tre
 artefakterna till GitHub Packages, antingen när en tagg `v<version>` pushas eller manuellt
 (Actions → Publicera → Run workflow på `main`), som då skapar taggen själv. Molnsessioner kan inte
 pusha taggar och använder därför den manuella vägen.
@@ -134,4 +171,5 @@ pusha taggar och använder därför den manuella vägen.
 
 | Version | Ändring |
 |---|---|
+| 0.2.0 | Modulen `ui-common` (fel-API, list-, detalj- och formulärtillstånd) och 22 komponenter till: fält, val, kort, pills, snackbars, tomt läge och läsfel; flerval i `ChoiceChips` |
 | 0.1.0 | Första versionen: tema-API:t och elva komponenter ur ReseApoteket och Dagboken |

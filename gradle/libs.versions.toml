@@ -7,10 +7,15 @@ agp                      = "9.4.1"
 kotlin                   = "2.4.20"
 composeBom               = "2026.09.00"
 material3                = "1.5.0-beta01"   # Expressive är internal i stabila 1.4.0
+kotlinxCoroutines        = "1.11.0"
+kotlinxCollections       = "0.4.0"
+kotlinxDatetime          = "0.8.0"
+androidxAnnotation       = "1.9.1"   # samma som Compose BOM drar in
 junit                    = "4.13.2"
 robolectric              = "4.17"
 roborazzi                = "1.76.0"
 konsist                  = "0.17.3"
+turbine                  = "1.2.1"
 concurrentFutures        = "1.2.0"
 errorProneAnnotations    = "2.30.0"
 pmd                      = "7.28.0"
@@ -25,6 +30,11 @@ androidx-compose-ui-graphics          = { group = "androidx.compose.ui",        
 androidx-compose-ui-test-junit4       = { group = "androidx.compose.ui",         name = "ui-test-junit4" }
 androidx-compose-ui-test-manifest     = { group = "androidx.compose.ui",         name = "ui-test-manifest" }
 androidx-compose-material3            = { group = "androidx.compose.material3",  name = "material3",                         version.ref = "material3" }
+androidx-compose-runtime              = { group = "androidx.compose.runtime",    name = "runtime" }
+androidx-annotation                   = { group = "androidx.annotation",         name = "annotation",                        version.ref = "androidxAnnotation" }
+kotlinx-coroutines-core               = { group = "org.jetbrains.kotlinx",       name = "kotlinx-coroutines-core",           version.ref = "kotlinxCoroutines" }
+kotlinx-collections-immutable         = { group = "org.jetbrains.kotlinx",       name = "kotlinx-collections-immutable",     version.ref = "kotlinxCollections" }
+kotlinx-datetime                      = { group = "org.jetbrains.kotlinx",       name = "kotlinx-datetime",                  version.ref = "kotlinxDatetime" }
 # Test
 junit                                 = { group = "junit",                       name = "junit",                             version.ref = "junit" }
 kotlin-test                           = { group = "org.jetbrains.kotlin",        name = "kotlin-test",                       version.ref = "kotlin" }
@@ -33,6 +43,8 @@ roborazzi                             = { group = "io.github.takahirom.roborazzi
 roborazzi-compose                     = { group = "io.github.takahirom.roborazzi", name = "roborazzi-compose",               version.ref = "roborazzi" }
 roborazzi-junit-rule                  = { group = "io.github.takahirom.roborazzi", name = "roborazzi-junit-rule",            version.ref = "roborazzi" }
 konsist                               = { group = "com.lemonappdev",             name = "konsist",                           version.ref = "konsist" }
+kotlinx-coroutines-test               = { group = "org.jetbrains.kotlinx",       name = "kotlinx-coroutines-test",           version.ref = "kotlinxCoroutines" }
+turbine                               = { group = "app.cash.turbine",            name = "turbine",                           version.ref = "turbine" }
 errorprone-annotations                = { group = "com.google.errorprone",       name = "error_prone_annotations",           version.ref = "errorProneAnnotations" }
 androidx-concurrent-futures           = { group = "androidx.concurrent",         name = "concurrent-futures",                version.ref = "concurrentFutures" }
 # Copy-paste-detektor (cpdCheck i rotens build.gradle.kts)

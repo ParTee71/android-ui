@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Texter bara för bibliotekets tester och skärmdumpar (debug-varianten, som inte publiceras) –
+  felen och färgnamnen kommer annars från appen. Samma ordalydelse som i ReseApoteket.
+-->
+<resources>
+    <string name="sample_error_offline">Ingen anslutning just nu. Det du sparar skickas när nätet är tillbaka.</string>
+    <string name="sample_error_not_found">Det finns inte längre – det kan ha raderats på en annan enhet.</string>
+    <string name="sample_error_unknown">Något gick fel. Försök igen.</string>
+    <string name="sample_load_error_title">Kunde inte hämta uppgifterna</string>
+    <string name="sample_sync_denied_format">Synken nekades: %1$s</string>
+</resources>
