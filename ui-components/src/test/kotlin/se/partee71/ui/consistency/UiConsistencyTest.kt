@@ -19,7 +19,8 @@ class UiConsistencyTest {
     private val allowlist by lazy { parseAllowlist(File(repoRoot, "ui-allowlist.txt").readText()) }
     private val production = Konsist.scopeFromProduction(moduleName = "ui-components") +
         Konsist.scopeFromProduction(moduleName = "ui-theme") +
-        Konsist.scopeFromProduction(moduleName = "ui-common")
+        Konsist.scopeFromProduction(moduleName = "ui-common") +
+        Konsist.scopeFromProduction(moduleName = "ui-testing")
 
     @Test
     fun `mönsterfilen har alla scope och en ersättning per mönster`() {
@@ -30,7 +31,7 @@ class UiConsistencyTest {
     @Test
     fun `ingen kod i bibliotekets main använder förbjudna mönster`() {
         val files = production.files.toList()
-        assertTrue(listOf("/ui-theme/", "/ui-components/", "/ui-common/").all { module -> files.any { it.path.contains(module) } }, "hittade inte alla moduler")
+        assertTrue(listOf("/ui-theme/", "/ui-components/", "/ui-common/", "/ui-testing/").all { module -> files.any { it.path.contains(module) } }, "hittade inte alla moduler")
         val hits = files.flatMap { file ->
             val rel = File(file.path).relativeTo(repoRoot).invariantSeparatorsPath
             findViolations(rel, file.text).map { (line, match, replacement) -> "  $rel:$line  `${match.trim()}`  → använd $replacement" }
@@ -52,6 +53,7 @@ class UiConsistencyTest {
         assertEquals(listOf("components", "expressive"), scopesFor("ui-components/src/main/kotlin/se/partee71/ui/components/X.kt"))
         assertEquals(listOf("theme", "expressive"), scopesFor("ui-theme/src/main/kotlin/se/partee71/ui/theme/X.kt"))
         assertEquals(listOf("expressive"), scopesFor("ui-common/src/main/kotlin/se/partee71/ui/common/X.kt"))
+        assertEquals(listOf("expressive"), scopesFor("ui-testing/src/main/kotlin/se/partee71/ui/testing/X.kt"))
         assertEquals(emptyList(), scopesFor("ui-components/src/test/kotlin/se/partee71/ui/components/X.kt"))
     }
 

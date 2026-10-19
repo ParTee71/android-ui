@@ -5,7 +5,7 @@ eventuellt Fonder): ett tema-API och de delade komponenterna, så att samma elem
 beter sig likadant i alla appar och bara finns på ett ställe. Varje app behåller sina egna
 färger, former och typsnitt och skickar in dem i temat.
 
-**Version:** 0.3.0 · Material 3 `1.5.0-beta01` (Expressive) · Compose BOM `2026.09.00` ·
+**Version:** 0.4.0 · Material 3 `1.5.0-beta01` (Expressive) · Compose BOM `2026.09.00` ·
 Kotlin `2.4.20` · AGP `9.4.1` · compileSdk 37 · minSdk 30.
 
 ## Moduler
@@ -14,7 +14,8 @@ Kotlin `2.4.20` · AGP `9.4.1` · compileSdk 37 · minSdk 30.
 |---|---|---|
 | `se.partee71.ui:ui-theme` | `se.partee71.ui.theme` | `AppTheme`, `Spacing`, `AppShapes`, `AppTypography`, `ExtendedColors`, `Tone`, `ToneColors` |
 | `se.partee71.ui:ui-common` | `se.partee71.ui.common` | ramarnas tillstånd utan UI: `UiError`/`ErrorMapper`, `ListUiState`, `DetailUiState`, `EditorState`, `EditorLoader`, `shownAfter` |
-| `se.partee71.ui:ui-components` | `se.partee71.ui.components` | komponenterna nedan (drar in `ui-theme` och `ui-common`) |
+| `se.partee71.ui:ui-components` | `se.partee71.ui.components` | komponenterna och ramarna nedan (drar in `ui-theme` och `ui-common`) |
+| `se.partee71.ui:ui-testing` | `se.partee71.ui.testing` | ramarnas kontraktstester, för appens enhetstester (`testImplementation`) |
 
 ## Lägga till i en app
 
@@ -38,7 +39,8 @@ dependencyResolutionManagement {
 }
 ```
 
-och i versionskatalogen/byggfilen `implementation("se.partee71.ui:ui-components:0.3.0")`.
+och i versionskatalogen/byggfilen `implementation("se.partee71.ui:ui-components:0.4.0")` och
+`testImplementation("se.partee71.ui:ui-testing:0.4.0")`.
 
 - **CI i appen:** `GITHUB_TOKEN` räcker när paketet gett apprepot läsåtkomst
   (paketets inställningar → *Manage Actions access*) och jobbet har `permissions: packages: read`.
@@ -104,6 +106,67 @@ Testas med JUnit och Turbine.
   `EditorLoader` (läsning, "Försök igen", `project`, `prepare`, `afterLoad`).
 - **`Flow<Boolean>.shownAfter(delay)`** – visar en indikator först efter en fördröjning.
 
+## Ramarna
+
+Varje listskärm, redigeringsskärm och detaljskärm i apparna byggs på en av tre ramar, så att laddning,
+tomt läge, fel, "Försök igen", "Släng ändringar?", sparfel och arkivering beter sig likadant överallt.
+
+```kotlin
+EntityListScreen(title, state: ListUiState<T>, empty: EmptyContent, add: AddAction?, key, …,
+    onRetry, group: ((T) -> ListGroup)?, archive: ListArchive?, subtitle, onBack, actions, header,
+    subgroup, filter, topBarSize = TopBarSize.Large, footer, row)
+EntityEditScreen(title, state: EditorUiState<*>, events: EditorEvents, onSave, onClose, …,
+    saveLabel, onArchive, onRestore, delete: DeleteAction?, onRetry, onSaved = onClose, formError,
+    horizontalMargin = Spacing.xl, content)
+EntityDetailScreen(state: DetailUiState<T>, header: ((T) -> DetailHeader)?, onBack: (() -> Unit)?, …,
+    title, onEdit, menu, onRetry, error: UiError?, onErrorShown, subtitle, actions, snackbar,
+    sectionGap = Spacing.m, leading, content)
+```
+
+| Skillnad mellan apparna | Parameter | ReseApoteket | Dagboken |
+|---|---|---|---|
+| Lägg till-knapp | `add: AddAction(label, onClick, menu)`; `null` = ingen knapp, varken i listan eller i tomt läge | `AddAction(…)` (förr `onAdd` + `EmptyContent.actionLabel` + `addMenu`) | `AddAction` eller `null` |
+| Kolumner | `ListGroup.columns` är ett tak; så många kolumner om minst 260 dp som får plats används | som förut | nytt: en kolumn på telefon |
+| Filter, sidfot, postkort, räknare | `filter`, `footer`, `ListGroup.cards`, `ListGroup.showCount`, `topBarSize` | – | som förut |
+| Arkiveringsfel | `ListArchive.error: UiError` | som förut | förr `failure: Failure` |
+| Formulärets sidomarginal | `horizontalMargin` | `Spacing.xl` (standard) | `Spacing.l` |
+| Formulärfel överst | `formError` | – | som förut |
+| Tangentbordet | `imePadding` före `verticalScroll` (fältet hamnar ovanför tangentbordet) | nytt | som förut |
+| Detaljens flikläge | `onBack = null`: stor topprad som fälls ihop, `title`, `subtitle`, `actions`, `snackbar`, plats för verktygsraden | – | som förut |
+| Detaljens avstånd mellan sektioner | `sectionGap` | `Spacing.m` (standard) | `Spacing.l` |
+| Hopfällbar grupp | rubriken minst 48 dp, läses som knapp ("Fäll ut"/"Fäll ihop"), chevronen fjädrar | nytt | som förut |
+
+- **Arkivering:** `ArchiveActions(scope, errors, setArchived, undoFormat, errorMessage)` är logiken i
+  listans ViewModel (svep, Ångra, "Visa arkiverade", `offerUndo` för annat än arkivering);
+  `visible(source) { it.archived }` filtrerar och `collectAsListArchive()` ger listans `ListArchive`.
+  Raderna sveps med `SwipeToHide`; `UndoSnackbar` visas av listramen.
+- **Lägg till-knappens tagg:** `ENTITY_LIST_ADD_TAG`, som kontraktet använder för att pröva att knappen saknas.
+
+## ui-testing – kontraktstesterna
+
+En skärm som använder en ram kör ramens kontrakt i sitt Robolectric-test och testar sedan bara det
+som är unikt för skärmen. Kontrakten prövar ramens beteende genom appens skärm, med appens tema och fel:
+
+| Kontrakt | Prövar |
+|---|---|
+| `runListScreenContract(environment, item, itemText, emptyTitle, addLabel: String?, screen)` | laddar; tomt läge med lägg till-knapp (eller ingen knapp med `addLabel = null`); fel med felets text och "Försök igen"; innehåll med lägg till ovanför listan |
+| `runEditScreenContract(environment, editor, makeInvalid?, makeValid, invalidMessage?, saveLabel, screen)` | "Spara" aktiv först när giltigt och ändrat; fältfel efter ändring; "Släng ändringar?" vid bakåtpilen och systemets bakåt; sparfel som snackbar (kvitterat); lyckad sparning stänger (kvitterat); bakåt utan ändringar stänger direkt |
+| `runDetailScreenContract(environment, value, valueText, editable = true, tab = false, screen)` | laddar utan Redigera; läsfel med "Försök igen"; något som inte finns utan "Försök igen"; innehåll med Redigera och tillbakapil (ingen pil i flikläge) |
+
+Appen skriver sin miljö en gång i testkoden:
+
+```kotlin
+val contracts = ContractEnvironment(AppErrors, DataError.Offline) { ReseApoteketTheme(content = it) }
+
+@Test
+fun `listan uppfyller listkontraktet`() = rule.runListScreenContract(contracts, item, "Solkräm", "Inga familjeartiklar än", "Lägg till") { state, onAdd, onRetry ->
+    FamilyItemsContent(state, onAdd = onAdd, onRetry = onRetry)
+}
+```
+
+Modulens egna tester kör kontrakten mot bibliotekets ramar – och prövar att de fäller en skärm som
+inte använder ramen rätt.
+
 ## Komponenter
 
 | Komponent | Vad | Skillnad mot apparnas tidigare version |
@@ -136,6 +199,9 @@ Testas med JUnit och Turbine.
 | `DiscardChangesDialog` | "Släng ändringar?" – "Släng" / "Fortsätt redigera" | Var appens egen |
 | `EmojiPicker` | Välj en emoji ur `emojis` med `ChoiceGrid`s ring | Listan krävs – apparnas listor (`PERSON_EMOJIS`, `DEFAULT_EMOJIS`) stannar i appen; ReseApotekets egen markering ersätts av ringen |
 | `EmptyState` | Tomt läge med ikon, rubrik, text och knapp; `compact` (Dagboken) | – |
+| `EntityDetailScreen` | Detaljramen: huvud, sektioner, Redigera och meny; underskärm med `title`, flikläge med `onBack = null` | Union av apparnas; se Ramarna |
+| `EntityEditScreen` | Redigeringsramen med `EditorState`: Spara, "Släng ändringar?", sparfel, arkivera/återställ/radera, `formError`, tangentbordet | Union av apparnas; se Ramarna |
+| `EntityListScreen` | Listramen: laddar, tomt, fel, grupper i kort, kolumner efter bredd, arkivering, `filter`, `footer` | Union av apparnas; se Ramarna |
 | `ErrorSnackbar` | Visar ett `UiError` en gång; `template` (t.ex. "Synken nekades: %1$s"), `duration` | Tar `UiError` i stället för appens `DataError` |
 | `ExampleChips` | Exempel att trycka in i ett fält | – |
 | `FieldError` | Felraden under ett fält | – |
@@ -168,7 +234,7 @@ varje app sin ikonstil utan parameter.
 ## Bygga och testa
 
 ```bash
-./gradlew testDebugUnitTest          # Robolectric-beteende, UiConsistencyTest, temat
+./gradlew testDebugUnitTest          # Robolectric-beteende, UiConsistencyTest, temat, kontrakten i ui-testing
 ./gradlew verifyRoborazziDebug       # skärmdumpar mot ui-components/src/test/screenshots
 ./gradlew recordRoborazziDebug       # spela in referenserna – bara vid avsiktlig visuell ändring
 ./gradlew cpdCheck                   # copy-paste-detektor (PMD CPD, 80 tokens)
@@ -181,7 +247,7 @@ med ReseApotekets palett (`ui-components/src/test/.../testing/TestTheme.kt`).
 
 ## Publicering
 
-Versionen står i `gradle.properties` (`version=`). `.github/workflows/publish.yml` publicerar alla tre
+Versionen står i `gradle.properties` (`version=`). `.github/workflows/publish.yml` publicerar alla fyra
 artefakterna till GitHub Packages, antingen när en tagg `v<version>` pushas eller manuellt
 (Actions → Publicera → Run workflow på `main`), som då skapar taggen själv. Molnsessioner kan inte
 pusha taggar och använder därför den manuella vägen.
@@ -190,6 +256,7 @@ pusha taggar och använder därför den manuella vägen.
 
 | Version | Ändring |
 |---|---|
+| 0.4.0 | Ramarna `EntityListScreen`, `EntityEditScreen` och `EntityDetailScreen` med båda apparnas parametrar, `ArchiveActions`/`ListArchive` för arkivering, och modulen `ui-testing` med kontraktstesterna för apparnas skärmar. Kolumner efter bredd och tangentbordshanteringen gäller båda apparna |
 | 0.3.0 | 19 komponenter till, som glidit isär mellan apparna, i en version med båda apparnas parametrar: listrader (`ItemRow` med bubbla vid kapad titel, `CheckRow`, `PausableRow`, `SwitchRow`), `SuggestionField`, `AppBottomSheet` med "Släng ändringar?" och fast knapprad, `AppMenu` med avdelningar och kryssrader, `AppFloatingToolbar` med huvudknapp, `ConfirmDialog`, `DeleteConfirmDialog`, `DiscardChangesDialog`, `DateField` med rensa-knapp och `EmojiPicker` |
 | 0.2.0 | Modulen `ui-common` (fel-API, list-, detalj- och formulärtillstånd) och 22 komponenter till: fält, val, kort, pills, snackbars, tomt läge och läsfel; flerval i `ChoiceChips` |
 | 0.1.0 | Första versionen: tema-API:t och elva komponenter ur ReseApoteket och Dagboken |

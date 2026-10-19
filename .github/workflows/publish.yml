@@ -1,4 +1,4 @@
-# Publicerar ui-theme, ui-common och ui-components till GitHub Packages när en tagg v<version> pushas,
+# Publicerar ui-theme, ui-common, ui-components och ui-testing till GitHub Packages när en tagg v<version> pushas,
 # eller manuellt (Actions → Publicera → Run workflow på main), som då skapar taggen själv.
 # Taggen måste stämma med version i gradle.properties. Testerna har redan körts i PR:en.
 name: Publicera
