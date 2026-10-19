@@ -1,13 +1,15 @@
-# Publicerar ui-theme och ui-components till GitHub Packages när en tagg v<version> pushas.
+# Publicerar ui-theme och ui-components till GitHub Packages när en tagg v<version> pushas,
+# eller manuellt (Actions → Publicera → Run workflow på main), som då skapar taggen själv.
 # Taggen måste stämma med version i gradle.properties. Testerna har redan körts i PR:en.
 name: Publicera
 
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 concurrency:
@@ -27,7 +29,17 @@ jobs:
         run: |
           set -euo pipefail
           version="$(grep -E '^version=' gradle.properties | cut -d= -f2)"
-          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+          echo "TAG=v$version" >> "$GITHUB_ENV"
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            if [ "$GITHUB_REF_NAME" != "main" ]; then
+              echo "::error::Kör publiceringen på main, inte $GITHUB_REF_NAME"
+              exit 1
+            fi
+            if git ls-remote --exit-code --tags origin "v$version" >/dev/null; then
+              echo "::error::v$version finns redan – höj version i gradle.properties"
+              exit 1
+            fi
+          elif [ "v$version" != "$GITHUB_REF_NAME" ]; then
             echo "::error::Taggen $GITHUB_REF_NAME stämmer inte med version=$version i gradle.properties"
             exit 1
           fi
@@ -38,3 +50,9 @@ jobs:
         # Utan configuration cache: första körningen på en tom maskin föll lokalt en gång på
         # serialiseringen av lint-klassvägen i extractReleaseAnnotations (AGP 9.4.1).
         run: ./gradlew --no-configuration-cache publishAllPublicationsToGitHubPackagesRepository
+
+      - name: Tagga versionen
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git tag "$TAG" "$GITHUB_SHA"
+          git push origin "$TAG"

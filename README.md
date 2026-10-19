@@ -125,8 +125,10 @@ med ReseApotekets palett (`ui-components/src/test/.../testing/TestTheme.kt`).
 
 ## Publicering
 
-Versionen står i `gradle.properties` (`version=`). En tagg `v<version>` på `main` kör
-`.github/workflows/publish.yml`, som publicerar båda artefakterna till GitHub Packages.
+Versionen står i `gradle.properties` (`version=`). `.github/workflows/publish.yml` publicerar båda
+artefakterna till GitHub Packages, antingen när en tagg `v<version>` pushas eller manuellt
+(Actions → Publicera → Run workflow på `main`), som då skapar taggen själv. Molnsessioner kan inte
+pusha taggar och använder därför den manuella vägen.
 
 ## Versionshistorik
 
