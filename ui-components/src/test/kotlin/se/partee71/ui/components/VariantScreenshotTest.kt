@@ -140,4 +140,54 @@ class VariantScreenshotTest {
             )
         }
     }
+
+    // --- 0.7.0 ---
+
+    @Test
+    fun `EmptyState - flera knappar`() = captureLightAndDark("EmptyState_knappar") {
+        SampleSheet {
+            EmptyState(
+                R.drawable.ic_box,
+                "Ingen portfölj ännu",
+                "Lägg till din första fondtransaktion för att se en översikt här.",
+                actions = listOf(
+                    EmptyAction("Bevaka en fond", {}, R.drawable.ic_add),
+                    EmptyAction("Importera innehav", {}, R.drawable.ic_archive, ButtonVariant.Secondary),
+                    EmptyAction("Återställ från säkerhetskopia", {}, R.drawable.ic_unarchive, ButtonVariant.Text)
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `EntityListScreen - tomt utan lägg till med egna knappar`() = captureLightAndDark("EntityListScreen_tom_knappar") {
+        EntityListScreen<String>(
+            "Händelser",
+            ListUiState.Empty,
+            EmptyContent(
+                R.drawable.ic_calendar,
+                "Inga transaktioner",
+                "Registrera köp och sälj för att räkna ut värde.",
+                actions = listOf(
+                    EmptyAction("Ny transaktion", {}, R.drawable.ic_add),
+                    EmptyAction("Importera avräkningsnota", {}, R.drawable.ic_archive, ButtonVariant.Secondary)
+                )
+            ),
+            add = null,
+            key = { it },
+            filter = { ChoiceChips(listOf("Alla", "Köp", "Sälj"), "Alla", {}, label = { it }) }
+        ) {}
+    }
+
+    @Test
+    fun `AppTopBar - tillbakapilens stil`() = captureLightAndDark("AppTopBar_tillbakapil") {
+        SampleSheet {
+            AppTopBar("Standard", size = TopBarSize.Small, onBack = {})
+            AppTopBar("Lägg till fond", size = TopBarSize.Small, onBack = {}, backStyle = TopBarBackStyle(variant = IconButtonVariant.Plain))
+            AppTopBar("Grön ton", size = TopBarSize.Small, onBack = {}, backStyle = TopBarBackStyle(tone = Tone.Green))
+            CompositionLocalProvider(LocalTopBarBackStyle provides TopBarBackStyle(variant = IconButtonVariant.Plain, tone = Tone.Blue)) {
+                AppTopBar("Blå via appen", size = TopBarSize.Small, onBack = {})
+            }
+        }
+    }
 }

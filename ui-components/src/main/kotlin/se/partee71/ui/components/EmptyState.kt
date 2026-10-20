@@ -30,6 +30,8 @@ import se.partee71.ui.theme.Spacing
  * (inloggning, "Uppdatera appen"); annars står knappen under texten. [isError] tonar ikonrutan som
  * ett fel (listans feltillstånd, [LoadErrorState]). [compact] är samma budskap i mindre format för
  * en yta inuti ett kort – t.ex. ett diagrams tomma läge ("För lite data än").
+ * [actions] är en eller flera knappar under [action], i full bredd och i den ordning de står
+ * ("Ny transaktion", "Importera avräkningsnota"); standard inga.
  */
 @Composable
 fun EmptyState(
@@ -41,10 +43,12 @@ fun EmptyState(
     fullScreen: Boolean = false,
     isError: Boolean = false,
     compact: Boolean = false,
+    actions: List<EmptyAction> = emptyList(),
     action: (@Composable () -> Unit)? = null
 ) {
     val footer: @Composable ColumnScope.() -> Unit = {
         action?.let { Box(Modifier.fillMaxWidth()) { it() } }
+        EmptyActionButtons(actions)
         note?.let {
             Text(
                 it,
@@ -70,6 +74,30 @@ fun EmptyState(
             Message(icon, title, message, isError, compact)
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.m), content = footer)
         }
+    }
+}
+
+/**
+ * En knapp i ett tomt tillstånd: text, åtgärd, valfri ikon och knappvariant (standard den fyllda
+ * huvudknappen; en andra åtgärd brukar vara [ButtonVariant.Secondary] eller [ButtonVariant.Text]).
+ */
+data class EmptyAction(
+    val label: String,
+    val onClick: () -> Unit,
+    @param:DrawableRes val icon: Int? = null,
+    val variant: ButtonVariant = ButtonVariant.Primary
+)
+
+/**
+ * Knapparna i [actions] under varandra i full bredd, efter [first] (listramens lägg till-knapp) – samma i
+ * [EmptyState] och listramens tomma läge.
+ */
+@Composable
+internal fun EmptyActionButtons(actions: List<EmptyAction>, first: (@Composable () -> Unit)? = null) {
+    if (actions.isEmpty() && first == null) return
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.m)) {
+        first?.invoke()
+        actions.forEach { AppButton(it.label, it.onClick, Modifier.fillMaxWidth(), variant = it.variant, icon = it.icon) }
     }
 }
 

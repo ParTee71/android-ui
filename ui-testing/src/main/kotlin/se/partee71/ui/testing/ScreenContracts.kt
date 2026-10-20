@@ -58,6 +58,9 @@ private val ContractEnvironment.failureText: String get() = text(errors.map(retr
  * @param item en rad och [itemText] som ska synas för den.
  * @param addLabel lägg till-knappens text; `null` för en lista utan lägg till – då prövas att ingen
  *   lägg till-knapp finns, varken i det tomma tillståndet eller ovanför listan.
+ * @param emptyActions texterna på skärmens egna knappar i det tomma tillståndet (`EmptyContent.actions`),
+ *   som ska synas där; standard inga.
+ * @param errorTitle läsfelets rubrik om skärmen har en egen (`EntityListScreen.errorTitle`); standard ramens.
  * @param screen skärmens innehåll för ett tillstånd, med callbacks för lägg till och försök igen.
  */
 fun <T> ComposeContentTestRule.runListScreenContract(
@@ -66,6 +69,8 @@ fun <T> ComposeContentTestRule.runListScreenContract(
     itemText: String,
     emptyTitle: String,
     addLabel: String?,
+    emptyActions: List<String> = emptyList(),
+    errorTitle: String = text(R.string.list_error_title),
     screen: @Composable (state: ListUiState<T>, onAdd: () -> Unit, onRetry: () -> Unit) -> Unit
 ) {
     var state by mutableStateOf<ListUiState<T>>(ListUiState.Loading)
@@ -83,9 +88,10 @@ fun <T> ComposeContentTestRule.runListScreenContract(
     } else {
         onNodeWithTag(ENTITY_LIST_ADD_TAG).assertDoesNotExist()
     }
+    emptyActions.forEach { onNodeWithText(it).assertIsDisplayed() }
 
     state = ListUiState.Error(environment.errors.map(environment.retryableFailure))
-    onNodeWithText(text(R.string.list_error_title)).assertIsDisplayed()
+    onNodeWithText(errorTitle).assertIsDisplayed()
     onNodeWithText(environment.failureText).assertIsDisplayed()
     onNodeWithText(text(R.string.retry)).performClick()
     assertEquals("fel: Försök igen ska läsa om listan", 1, retries)
