@@ -5,7 +5,7 @@ eventuellt Fonder): ett tema-API och de delade komponenterna, så att samma elem
 beter sig likadant i alla appar och bara finns på ett ställe. Varje app behåller sina egna
 färger, former och typsnitt och skickar in dem i temat.
 
-**Version:** 0.6.0 · Material 3 `1.5.0-beta01` (Expressive) · Compose BOM `2026.09.00` ·
+**Version:** 0.7.0 · Material 3 `1.5.0-beta01` (Expressive) · Compose BOM `2026.09.00` ·
 Kotlin `2.4.20` · AGP `9.4.1` · compileSdk 37 · minSdk 30.
 
 ## Moduler
@@ -39,8 +39,8 @@ dependencyResolutionManagement {
 }
 ```
 
-och i versionskatalogen/byggfilen `implementation("se.partee71.ui:ui-components:0.6.0")` och
-`testImplementation("se.partee71.ui:ui-testing:0.6.0")`.
+och i versionskatalogen/byggfilen `implementation("se.partee71.ui:ui-components:0.7.0")` och
+`testImplementation("se.partee71.ui:ui-testing:0.7.0")`.
 
 - **CI i appen:** `GITHUB_TOKEN` räcker när paketet gett apprepot läsåtkomst
   (paketets inställningar → *Manage Actions access*) och jobbet har `permissions: packages: read`.
@@ -114,7 +114,8 @@ tomt läge, fel, "Försök igen", "Släng ändringar?", sparfel och arkivering b
 ```kotlin
 EntityListScreen(title, state: ListUiState<T>, empty: EmptyContent, add: AddAction?, key, …,
     onRetry, group: ((T) -> ListGroup)?, archive: ListArchive?, subtitle, onBack, actions, header,
-    subgroup, filter, topBarSize = TopBarSize.Large, footer, refreshing = false, onRefresh = null, row)
+    subgroup, filter, topBarSize = TopBarSize.Large, footer, refreshing = false, onRefresh = null,
+    errorTitle = null, row)
 EntityEditScreen(title, state: EditorUiState<*>, events: EditorEvents, onSave, onClose, …,
     saveLabel, onArchive, onRestore, delete: DeleteAction?, onRetry, onSaved = onClose, formError,
     horizontalMargin = Spacing.xl, content)
@@ -135,6 +136,8 @@ EntityDetailScreen(state: DetailUiState<T>, header: ((T) -> DetailHeader)?, onBa
 | Detaljens flikläge | `onBack = null`: stor topprad som fälls ihop, `title`, `subtitle`, `actions`, `snackbar`, plats för verktygsraden | – | som förut |
 | Detaljens avstånd mellan sektioner | `sectionGap` | `Spacing.m` (standard) | `Spacing.l` |
 | Hopfällbar grupp | rubriken minst 48 dp, läses som knapp ("Fäll ut"/"Fäll ihop"), chevronen fjädrar | nytt | som förut |
+| Knappar i tomt läge utan lägg till | `EmptyContent.actions: List<EmptyAction>` (standard inga); står under lägg till-knappen, eller ensamma med `add = null` | – | – (Fonder: flikarna med plusmeny, "Ny transaktion" + "Importera avräkningsnota") |
+| Läsfelets rubrik | `errorTitle` (standard `null` = "Kunde inte hämta listan") | – | – |
 | Dra för att uppdatera | `onRefresh` (standard `null` = ingen gest) och `refreshing` i listan och detaljen; Expressive-indikatorn överst, ytan har taggen `ENTITY_REFRESH_TAG` | – | – (Fonder: Fondsök, Portfölj, Fonddetalj) |
 
 - **Arkivering:** `ArchiveActions(scope, errors, setArchived, undoFormat, errorMessage)` är logiken i
@@ -150,7 +153,7 @@ som är unikt för skärmen. Kontrakten prövar ramens beteende genom appens sk�
 
 | Kontrakt | Prövar |
 |---|---|
-| `runListScreenContract(environment, item, itemText, emptyTitle, addLabel: String?, screen)` | laddar; tomt läge med lägg till-knapp (eller ingen knapp med `addLabel = null`); fel med felets text och "Försök igen"; innehåll med lägg till ovanför listan |
+| `runListScreenContract(environment, item, itemText, emptyTitle, addLabel: String?, emptyActions = emptyList(), errorTitle, screen)` | laddar; tomt läge med lägg till-knapp (eller ingen knapp med `addLabel = null`) och skärmens egna knappar (`emptyActions`); fel med rubriken (`errorTitle`) med felets text och "Försök igen"; innehåll med lägg till ovanför listan |
 | `runEditScreenContract(environment, editor, makeInvalid?, makeValid, invalidMessage?, saveLabel, screen)` | "Spara" aktiv först när giltigt och ändrat; fältfel efter ändring; "Släng ändringar?" vid bakåtpilen och systemets bakåt; sparfel som snackbar (kvitterat); lyckad sparning stänger (kvitterat); bakåt utan ändringar stänger direkt |
 | `runDetailScreenContract(environment, value, valueText, editable = true, tab = false, screen)` | laddar utan Redigera; läsfel med "Försök igen"; något som inte finns utan "Försök igen"; innehåll med Redigera och tillbakapil (ingen pil i flikläge) |
 
@@ -179,14 +182,14 @@ inte använder ramen rätt.
 | `AppDivider` | Avdelare mellan rader i ett kort | – |
 | `AppFilterChip` | Filterchip; `icon`, `onLongClick`, `value` (värde efter etiketten), `emphasized` (det aktiva bland flera valda), `pending` (`ChipPending`: väntande läge, tonat med streckad kant, ikon och tilläggstext) | `chipColors()` är publik för egna chips |
 | `AppFloatingToolbar` | Toppnivånavigeringen: flytande flikar; `action` (`ToolbarAction`, huvudknapp i `secondary` till höger – Dagboken), `ToolbarItem.badgeCount` (märke med antal i `secondary` på en ovald flik, läses "Beslut, 3 nya" – Fonder). `LocalBottomClearance`, `FloatingToolbarClearance`, `NoBottomClearance` | – |
-| `AppIconButton` | Ikonknapp, minst 48 dp, alltid `contentDescription` | – |
+| `AppIconButton` | Ikonknapp, minst 48 dp, alltid `contentDescription`; `tone` (platta och ikon för Tonal, ikonen för Plain; standard Material-färgerna) | – |
 | `AppLoading` | Expressive laddningsindikator mitt på ytan | – |
 | `AppMenu` | Menyn bakom ⋮ (`AppMenuItem`: `icon`, `destructive`, `section` (rubrik), `checked` (kryssrad som håller menyn öppen), `supporting`/`supportingTone` (undertext), `muted` (dämpad etikett)) | `section`, `checked` från Dagboken; `asSplitMenu()` från ReseApoteket |
 | `AppMenuPopup` | Själva menyn, för egna knappar som öppnar en meny | Publik (Dagboken använder den direkt) |
 | `AppSegmentedChoice` | Ett val av få alternativ som segmentknappar | – |
 | `AppSnackbarHost` | Den enda platsen där meddelanden visas | – |
 | `AppTextField` | Det enda textfältet; `maxLength` (`AppTextFieldDefaults.SHORT_MAX_LENGTH` 200 / `LONG_MAX_LENGTH` 2000), `maxLines`, `suffix`, `valueIsPlaceholder` | Dagboken anger `maxLength = 5000` för långa fält |
-| `AppTopBar` | Skärmrubriken, stor eller liten | Synkindikatorn är appens: den sätts som `LocalTopBarStatus` (eller parametern `status`) |
+| `AppTopBar` | Skärmrubriken, stor eller liten; tillbakapilen `TopBarBackStyle(variant, tone)` via `LocalTopBarBackStyle` (eller parametern `backStyle`), som också ramarna följer | Synkindikatorn är appens: den sätts som `LocalTopBarStatus` (eller parametern `status`). Standardpilen är den tonade plattan; Fonder: `TopBarBackStyle(variant = IconButtonVariant.Plain)` |
 | `CardSegment` | Ett segment i ett sammanfogat kort (`top`, `bottom`), `contentColor`, `onClick`, `style`; med kontur delar bitarna skiljelinje | Ersätter Fonders `AppCardGroupPosition` |
 | `CheckRow` | Kryssrad med morfande kryss; `onClick` (krysset blir egen knapp), `accent`, `note`, `menu` (långtryck + ⋮, går före bubblan), `below`, `enabled`, `done`/`tinted` (standard `checked`: överstruken och tonad) | Dagbokens `note`, `menu`, `below`, `enabled`; Fonder `done = false, tinted = false` för "ta med" |
 | `ChipRow` | En rad chips som bryts eller rullar | – |
@@ -199,7 +202,7 @@ inte använder ramen rätt.
 | `DeleteConfirmDialog` | Permanent radering av en `DeleteAction` (titel, text, "Radera" i felfärg); titeln t.ex. `R.string.delete_title_format` ("Radera %s?") | Var appens egen (`DeleteAction` från `EntityEditScreen`) |
 | `DiscardChangesDialog` | "Släng ändringar?" – "Släng" / "Fortsätt redigera" | Var appens egen |
 | `EmojiPicker` | Välj en emoji ur `emojis` med `ChoiceGrid`s ring | Listan krävs – apparnas listor (`PERSON_EMOJIS`, `DEFAULT_EMOJIS`) stannar i appen; ReseApotekets egen markering ersätts av ringen |
-| `EmptyState` | Tomt läge med ikon, rubrik, text och knapp; `compact` (Dagboken) | – |
+| `EmptyState` | Tomt läge med ikon, rubrik, text och knapp; `compact` (Dagboken); `actions: List<EmptyAction>` (en eller flera knappar i full bredd, `label`, `onClick`, `icon`, `variant`) | Fonders tomma lägen med flera val |
 | `EntityDetailScreen` | Detaljramen: huvud, sektioner, Redigera och meny; underskärm med `title`, flikläge med `onBack = null`; `onRefresh`/`refreshing` | Union av apparnas; se Ramarna |
 | `EntityEditScreen` | Redigeringsramen med `EditorState`: Spara, "Släng ändringar?", sparfel, arkivera/återställ/radera, `formError`, tangentbordet | Union av apparnas; se Ramarna |
 | `EntityListScreen` | Listramen: laddar, tomt, fel, grupper i kort, kolumner efter bredd, arkivering, `filter`, `footer`, `onRefresh`/`refreshing` | Union av apparnas; se Ramarna |
@@ -257,6 +260,7 @@ pusha taggar och använder därför den manuella vägen.
 
 | Version | Ändring |
 |---|---|
+| 0.7.0 | För Fonders flikar: knappar i tomt läge utan lägg till (`EmptyAction`, `EmptyContent.actions`, `EmptyState.actions`), egen felrubrik i listan (`EntityListScreen.errorTitle`), tillbakapilens stil (`TopBarBackStyle` via `LocalTopBarBackStyle` / `AppTopBar.backStyle`) och `AppIconButton.tone`; listkontraktet prövar `emptyActions` och `errorTitle`. Standardvärdena bevarar utseendet |
 | 0.6.0 | Det Fonder behöver för att byta till biblioteket utan att ändra utseende: `ButtonVariant.Outlined`, `AppButton.contentDescription` och knappstilen `AppButtonStyle` (höjd, formmorf, tonad färg) via `LocalAppButtonStyle`; `AppCard.onClick` och kortstilen `AppCardStyle` (kontur, luft, delad kontur mellan bitar) via `LocalAppCardStyle`; `ItemRow` `overline`/`titleStyle`; `CheckRow` `done`/`tinted`; `SwitchRow.enabled`; `InfoPill` `shape`/`contentDescription`; `ToolbarItem.badgeCount`; dra för att uppdatera (`refreshing`/`onRefresh`) i `EntityListScreen` och `EntityDetailScreen`. Standardvärdena bevarar utseendet |
 | 0.5.0 | `AppFilterChip` får `value`, `emphasized` och `pending` (`ChipPending`), `AppMenuItem` får `supporting`, `supportingTone` och `muted` – för Dagbokens symptomstyrka och vid behov-markeringar. Standardvärdena bevarar utseendet |
 | 0.4.0 | Ramarna `EntityListScreen`, `EntityEditScreen` och `EntityDetailScreen` med båda apparnas parametrar, `ArchiveActions`/`ListArchive` för arkivering, och modulen `ui-testing` med kontraktstesterna för apparnas skärmar. Kolumner efter bredd och tangentbordshanteringen gäller båda apparna |

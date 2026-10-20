@@ -12,7 +12,9 @@ import se.partee71.ui.common.EditorState
 import se.partee71.ui.common.Validator
 import se.partee71.ui.components.AddAction
 import se.partee71.ui.components.AppTextField
+import se.partee71.ui.components.ButtonVariant
 import se.partee71.ui.components.DetailHeader
+import se.partee71.ui.components.EmptyAction
 import se.partee71.ui.components.EmptyContent
 import se.partee71.ui.components.EntityDetailScreen
 import se.partee71.ui.components.EntityEditScreen
@@ -41,6 +43,31 @@ class ScreenContractsTest {
     @Test
     fun `listramen utan lägg till uppfyller listkontraktet`() = rule.runListScreenContract(contractEnvironment, "Promenad", "Promenad", empty.title, addLabel = null) { state, _, onRetry ->
         EntityListScreen("Dagbok", state, empty, add = null, key = { it }, onRetry = onRetry) { ItemRow(it) }
+    }
+
+    @Test
+    fun `listramen utan lägg till men med egna knappar och egen felrubrik uppfyller listkontraktet`() {
+        val withActions = empty.copy(actions = listOf(EmptyAction("Ny transaktion", {}), EmptyAction("Importera avräkningsnota", {}, variant = ButtonVariant.Secondary)))
+        rule.runListScreenContract(
+            contractEnvironment,
+            "Köp",
+            "Köp",
+            empty.title,
+            addLabel = null,
+            emptyActions = listOf("Ny transaktion", "Importera avräkningsnota"),
+            errorTitle = "Kunde inte läsa händelserna"
+        ) { state, _, onRetry ->
+            EntityListScreen("Händelser", state, withActions, add = null, key = { it }, onRetry = onRetry, errorTitle = "Kunde inte läsa händelserna") { ItemRow(it) }
+        }
+    }
+
+    @Test
+    fun `listkontraktet fäller en skärm som saknar de tomma knapparna`() {
+        assertThrows(AssertionError::class.java) {
+            rule.runListScreenContract(contractEnvironment, "Köp", "Köp", empty.title, addLabel = null, emptyActions = listOf("Ny transaktion")) { state, _, onRetry ->
+                EntityListScreen("Händelser", state, empty, add = null, key = { it }, onRetry = onRetry) { ItemRow(it) }
+            }
+        }
     }
 
     @Test

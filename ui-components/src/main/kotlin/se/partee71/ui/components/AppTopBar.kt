@@ -12,6 +12,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
@@ -19,6 +20,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import se.partee71.ui.components.R
 import se.partee71.ui.theme.AppTheme
+import se.partee71.ui.theme.Tone
 
 enum class TopBarSize {
     /** Toppnivåskärm: stor rundad rubrik som krymper vid rullning. */
@@ -35,9 +37,20 @@ enum class TopBarSize {
 val LocalTopBarStatus = compositionLocalOf<@Composable RowScope.() -> Unit> { {} }
 
 /**
+ * Tillbakapilens utseende i [AppTopBar]: knappens [variant] och [tone] (se [AppIconButton]). Standard är
+ * den tonade runda plattan i Material-färgerna (ReseApoteket, Dagboken); Fonder har en genomskinlig pil,
+ * `TopBarBackStyle(variant = IconButtonVariant.Plain)`.
+ */
+data class TopBarBackStyle(val variant: IconButtonVariant = IconButtonVariant.Tonal, val tone: Tone? = null)
+
+/** Appens tillbakapil, satt en gång i appens tema – gäller också ramarnas topprad. */
+val LocalTopBarBackStyle = staticCompositionLocalOf { TopBarBackStyle() }
+
+/**
  * Skärmrubriken. [onBack] ger en tillbakaknapp; [actions] står till höger (t.ex. `AppMenu`).
  * [scrollBehavior] kopplas av ramarna (`EntityListScreen`, `EntityEditScreen`).
- * Före [actions] står [status] – standard det appen satt i [LocalTopBarStatus].
+ * Före [actions] står [status] – standard det appen satt i [LocalTopBarStatus]. Pilens utseende är
+ * [backStyle] – standard det appen satt i [LocalTopBarBackStyle].
  */
 @Composable
 fun AppTopBar(
@@ -48,12 +61,13 @@ fun AppTopBar(
     onBack: (() -> Unit)? = null,
     scrollBehavior: TopAppBarScrollBehavior? = null,
     status: @Composable RowScope.() -> Unit = LocalTopBarStatus.current,
+    backStyle: TopBarBackStyle = LocalTopBarBackStyle.current,
     actions: @Composable RowScope.() -> Unit = {}
 ) {
     val background = MaterialTheme.colorScheme.background
     val colors = TopAppBarDefaults.topAppBarColors(containerColor = background, scrolledContainerColor = background)
     val navigation: @Composable () -> Unit = {
-        onBack?.let { AppIconButton(R.drawable.ic_arrow_back, stringResource(R.string.back), it, variant = IconButtonVariant.Tonal) }
+        onBack?.let { AppIconButton(R.drawable.ic_arrow_back, stringResource(R.string.back), it, variant = backStyle.variant, tone = backStyle.tone) }
     }
     val heading = Modifier.semantics { heading() }
     val allActions: @Composable RowScope.() -> Unit = {

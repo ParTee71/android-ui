@@ -56,13 +56,16 @@ import se.partee71.ui.theme.Tone
 
 /**
  * Det tomma tillståndet för en lista: ikon, rubrik och en mening. [examples] är exempel att börja från
- * ("Solkräm") – chips med plus ovanför lägg till-knappen.
+ * ("Solkräm") – chips med plus ovanför lägg till-knappen. [actions] är knappar under lägg till-knappen –
+ * och de enda knapparna när listan saknar lägg till (`add = null`, t.ex. en flik med plusmeny):
+ * "Ny transaktion", "Importera avräkningsnota". Standard inga.
  */
 data class EmptyContent(
     @param:DrawableRes val icon: Int,
     val title: String,
     val message: String,
-    val examples: List<EmptyExample> = emptyList()
+    val examples: List<EmptyExample> = emptyList(),
+    val actions: List<EmptyAction> = emptyList()
 )
 
 /** Ett exempel i en tom lista: tryck öppnar något nytt att börja från. */
@@ -100,7 +103,8 @@ data class ListSubgroup(val title: String, val color: Color)
  * Den enda listskärmen. Samma fyra lägen överallt: laddning → [AppLoading]; tomt → [EmptyState] med
  * knapp; fel → [LoadErrorState] med "Försök igen"; innehåll → rader i kort, valfritt grupperade med
  * [SectionHeader]. "Lägg till" ([add]) står nere till höger ovanför verktygsraden; [add] = `null` för en
- * lista utan lägg till – ingen knapp, varken i listan eller i det tomma tillståndet. Med [archive] finns
+ * lista utan lägg till – ingen lägg till-knapp, varken i listan eller i det tomma tillståndet (men
+ * [EmptyContent.actions] visas). [errorTitle] ersätter läsfelets rubrik ("Kunde inte hämta listan"). Med [archive] finns
  * "Visa arkiverade" i menyn, svepta rader ([SwipeToHide]) ångras med [UndoSnackbar] och ett fel från
  * arkiveringen visas som meddelande.
  *
@@ -135,6 +139,7 @@ fun <T> EntityListScreen(
     footer: (@Composable () -> Unit)? = null,
     refreshing: Boolean = false,
     onRefresh: (() -> Unit)? = null,
+    errorTitle: String? = null,
     row: @Composable (T) -> Unit
 ) {
     val snackbar = remember { SnackbarHostState() }
@@ -172,7 +177,7 @@ fun <T> EntityListScreen(
                         title = empty.title,
                         message = empty.message,
                         modifier = Modifier.padding(bottom = clearance),
-                        action = if (add == null && footer == null) {
+                        action = if (add == null && footer == null && empty.actions.isEmpty()) {
                             null
                         } else {
                             { EmptyActions(empty, add, footer) }
@@ -180,7 +185,7 @@ fun <T> EntityListScreen(
                     )
 
                     is ListUiState.Error ->
-                        LoadErrorState(stringResource(R.string.list_error_title), state.error, onRetry, Modifier.padding(bottom = clearance))
+                        LoadErrorState(errorTitle ?: stringResource(R.string.list_error_title), state.error, onRetry, Modifier.padding(bottom = clearance))
 
                     is ListUiState.Content -> ListContent(state.items, key, group, subgroup, header, footer, clearance + if (add != null) ADD_BUTTON_CLEARANCE else Spacing.l, row)
                 }
@@ -189,16 +194,20 @@ fun <T> EntityListScreen(
     }
 }
 
-/** Under budskapet i det tomma tillståndet: exempel och lägg till-knappen (om [add] finns), sedan [footer]. */
+/**
+ * Under budskapet i det tomma tillståndet: exempel och lägg till-knappen (om [add] finns), appens egna
+ * knappar ([EmptyContent.actions]), sedan [footer].
+ */
 @Composable
 private fun EmptyActions(empty: EmptyContent, add: AddAction?, footer: (@Composable () -> Unit)?) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.l)) {
-        if (add != null) {
-            if (empty.examples.isNotEmpty()) {
-                ExampleChips(empty.examples, { it.onClick() }, label = { it.label })
-            }
-            AppButton(add.label, add.onClick, Modifier.fillMaxWidth().testTag(ENTITY_LIST_ADD_TAG), icon = R.drawable.ic_add)
+        if (add != null && empty.examples.isNotEmpty()) {
+            ExampleChips(empty.examples, { it.onClick() }, label = { it.label })
         }
+        EmptyActionButtons(
+            empty.actions,
+            add?.let { { AppButton(it.label, it.onClick, Modifier.fillMaxWidth().testTag(ENTITY_LIST_ADD_TAG), icon = R.drawable.ic_add) } }
+        )
         footer?.invoke()
     }
 }

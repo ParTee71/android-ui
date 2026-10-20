@@ -1,5 +1,6 @@
 package se.partee71.ui.components
 
+import android.content.Context
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -29,6 +30,7 @@ import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.test.core.app.ApplicationProvider
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
@@ -45,6 +47,7 @@ import se.partee71.ui.components.testing.TestTheme
 import se.partee71.ui.components.testing.assertSameColor
 import se.partee71.ui.components.testing.pixelAt
 import se.partee71.ui.components.testing.pixelAtEnd
+import se.partee71.ui.components.testing.sampleOffline
 import se.partee71.ui.components.testing.textStyle
 import se.partee71.ui.theme.AppTheme
 import se.partee71.ui.theme.Spacing
@@ -53,7 +56,8 @@ import se.partee71.ui.theme.Tone
 /**
  * Parametrarna som gör att Fonder kan byta till biblioteket utan att ändra utseende (0.6.0): knappens och
  * kortets appstil, konturerad knapp, klickbart kort, radernas overline/titelstil/överstrykning, låst växel,
- * pillens form och beskrivning, flikens märke och dra för att uppdatera i ramarna.
+ * pillens form och beskrivning, flikens märke och dra för att uppdatera i ramarna. Från 0.7.0 också tomma
+ * lägets egna knappar, listans felrubrik och tillbakapilens stil.
  */
 @RunWith(RobolectricTestRunner::class)
 class VariantBehaviorTest {
@@ -323,5 +327,84 @@ class VariantBehaviorTest {
         assertEquals(1, refreshes)
         withRefresh = 0
         rule.onNodeWithTag(ENTITY_REFRESH_TAG).assertDoesNotExist()
+    }
+
+    // --- 0.7.0: tomma lägets knappar, felrubriken och tillbakapilen ---
+
+    private val back get() = ApplicationProvider.getApplicationContext<Context>().getString(R.string.back)
+
+    @Test
+    fun `tomt läge visar egna knappar under varandra och de anropar sin åtgärd`() {
+        var created = 0
+        var imported = 0
+        show {
+            EmptyState(
+                R.drawable.ic_box,
+                "Inga innehav ännu",
+                "Lägg till din första fondtransaktion.",
+                actions = listOf(EmptyAction("Ny transaktion", { created++ }, R.drawable.ic_add), EmptyAction("Importera avräkningsnota", { imported++ }, variant = ButtonVariant.Secondary))
+            )
+        }
+        rule.onNodeWithText("Ny transaktion").performClick()
+        rule.onNodeWithText("Importera avräkningsnota").performClick()
+        assertEquals(1, created)
+        assertEquals(1, imported)
+        val first = rule.onNodeWithText("Ny transaktion").getBoundsInRoot()
+        val second = rule.onNodeWithText("Importera avräkningsnota").getBoundsInRoot()
+        assertTrue(second.top > first.bottom, "den andra knappen står under den första")
+    }
+
+    @Test
+    fun `listan utan lägg till visar de tomma knapparna, med lägg till står de under den`() {
+        var withAdd by mutableIntStateOf(0)
+        var created = 0
+        val empty = EmptyContent(R.drawable.ic_box, "Inga transaktioner", "Registrera köp och sälj.", actions = listOf(EmptyAction("Ny transaktion", { created++ })))
+        rule.setContent {
+            TestTheme {
+                EntityListScreen<String>("Händelser", ListUiState.Empty, empty, if (withAdd == 1) AddAction("Lägg till", {}) else null, key = { it }) {}
+            }
+        }
+        rule.onNodeWithTag(ENTITY_LIST_ADD_TAG).assertDoesNotExist()
+        rule.onNodeWithText("Ny transaktion").performClick()
+        assertEquals(1, created)
+        withAdd = 1
+        val add = rule.onNodeWithTag(ENTITY_LIST_ADD_TAG).getBoundsInRoot()
+        assertTrue(rule.onNodeWithText("Ny transaktion").getBoundsInRoot().top > add.bottom, "egna knappar står under lägg till")
+    }
+
+    @Test
+    fun `listans läsfel får en egen rubrik`() {
+        val empty = EmptyContent(R.drawable.ic_box, "Inga transaktioner", "Registrera köp och sälj.")
+        rule.setContent {
+            TestTheme {
+                EntityListScreen<String>("Händelser", ListUiState.Error(sampleOffline()), empty, null, key = { it }, errorTitle = "Kunde inte läsa händelserna") {}
+            }
+        }
+        rule.onNodeWithText("Kunde inte läsa händelserna").assertExists()
+        rule.onNodeWithText(ApplicationProvider.getApplicationContext<Context>().getString(R.string.list_error_title)).assertDoesNotExist()
+    }
+
+    @Test
+    fun `tillbakapilen är en tonad platta som standard, genomskinlig eller i en ton när appen väljer det`() {
+        var style by mutableIntStateOf(0)
+        show {
+            val backStyle = when (style) {
+                0 -> TopBarBackStyle()
+                1 -> TopBarBackStyle(variant = IconButtonVariant.Plain)
+                else -> TopBarBackStyle(tone = Tone.Green)
+            }
+            CompositionLocalProvider(LocalTopBarBackStyle provides backStyle) {
+                EntityListScreen<String>("Lägg till fond", ListUiState.Loading, EmptyContent(R.drawable.ic_box, "Inga", "Inga"), null, key = { it }, onBack = {}, topBarSize = TopBarSize.Small) {}
+            }
+        }
+        // Ovanför ikonen men inuti den runda plattan.
+        fun plate() = rule.onNodeWithContentDescription(back).pixelAt(rule.density, 24.dp, 6.dp)
+        assertSameColor(TestPalette.light.secondaryContainer, plate(), "standard")
+        style = 1
+        rule.waitForIdle()
+        assertSameColor(background, plate(), "genomskinlig")
+        style = 2
+        rule.waitForIdle()
+        assertSameColor(TestPalette.lightExtended.tone(Tone.Green).container, plate(), "grön ton")
     }
 }
