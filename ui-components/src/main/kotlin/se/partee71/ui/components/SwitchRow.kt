@@ -13,7 +13,8 @@ import androidx.compose.ui.semantics.semantics
  * Inställningsrad med växel: hela raden är tryckytan, TalkBack läser den som en växel. Med [onClick] är
  * växeln en egen kontroll (läses med titeln) och resten av raden öppnar detaljer – som en påminnelse i
  * Inställningar ([onClickLabel] läses upp), samma mönster som [CheckRow]. [inactive] tonar ned titel och
- * undertext men inte växeln – den ska gå att se och slå på igen.
+ * undertext men inte växeln – den ska gå att se och slå på igen. [enabled] = false låser växeln (visar läget
+ * men går inte att slå om; TalkBack läser en inaktiv växel) – en rad med [onClick] går ändå att öppna.
  */
 @Composable
 fun SwitchRow(
@@ -24,9 +25,10 @@ fun SwitchRow(
     subtitle: String? = null,
     onClick: (() -> Unit)? = null,
     onClickLabel: String? = null,
-    inactive: Boolean = false
+    inactive: Boolean = false,
+    enabled: Boolean = true
 ) {
-    val toggle = Modifier.toggleable(value = checked, role = Role.Switch, onValueChange = onCheckedChange)
+    val toggle = Modifier.toggleable(value = checked, enabled = enabled, role = Role.Switch, onValueChange = onCheckedChange)
     ItemRowLayout(
         title = title,
         modifier = modifier,
@@ -35,9 +37,9 @@ fun SwitchRow(
         textInactive = inactive,
         trailing = {
             if (onClick == null) {
-                SwitchControl(checked, onCheckedChange = null)
+                SwitchControl(checked, onCheckedChange = null, enabled = enabled)
             } else {
-                SwitchControl(checked, onCheckedChange, label = title)
+                SwitchControl(checked, onCheckedChange, label = title, enabled = enabled)
             }
         }
     )
@@ -46,8 +48,9 @@ fun SwitchRow(
 /**
  * Själva växeln – en gång för [SwitchRow] och appens kort med reglage. Utan [onCheckedChange] är den en
  * ren indikator (raden växlar och läser upp den); med är den en egen kontroll som TalkBack läser som [label].
+ * [enabled] = false visar läget i Material 3:s inaktiva färger.
  */
 @Composable
-fun SwitchControl(checked: Boolean, onCheckedChange: ((Boolean) -> Unit)?, modifier: Modifier = Modifier, label: String? = null) {
-    Switch(checked = checked, onCheckedChange = onCheckedChange, modifier = if (label == null) modifier else modifier.semantics { contentDescription = label })
+fun SwitchControl(checked: Boolean, onCheckedChange: ((Boolean) -> Unit)?, modifier: Modifier = Modifier, label: String? = null, enabled: Boolean = true) {
+    Switch(checked = checked, onCheckedChange = onCheckedChange, modifier = if (label == null) modifier else modifier.semantics { contentDescription = label }, enabled = enabled)
 }

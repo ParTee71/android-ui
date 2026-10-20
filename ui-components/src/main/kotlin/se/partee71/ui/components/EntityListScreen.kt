@@ -108,6 +108,8 @@ data class ListSubgroup(val title: String, val color: Color)
  * [filter] står fast under rubriken i alla lägen – även tomt och fel – för ett val av vilken lista som
  * visas. [topBarSize] = [TopBarSize.Small] för en underskärm med samma lilla topprad som formulären.
  * [footer] står sist i listan, efter grupperna, och under budskapet i det tomma tillståndet ("Visa äldre").
+ * Med [onRefresh] dras listan ned för att uppdatera, med indikatorn överst så länge [refreshing] är sant;
+ * utan (standard) finns ingen gest.
  *
  * @param group grupp för en rad; grupperna visas i den ordning de först förekommer.
  * @param subgroup undergrupp för en rad inom gruppen, i den ordning de förekommer.
@@ -131,6 +133,8 @@ fun <T> EntityListScreen(
     filter: (@Composable () -> Unit)? = null,
     topBarSize: TopBarSize = TopBarSize.Large,
     footer: (@Composable () -> Unit)? = null,
+    refreshing: Boolean = false,
+    onRefresh: (() -> Unit)? = null,
     row: @Composable (T) -> Unit
 ) {
     val snackbar = remember { SnackbarHostState() }
@@ -159,7 +163,7 @@ fun <T> EntityListScreen(
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
             filter?.let { Box(Modifier.padding(start = Spacing.l, end = Spacing.l, bottom = Spacing.m)) { it() } }
-            Box(Modifier.fillMaxWidth().weight(1f)) {
+            RefreshBox(refreshing, onRefresh, Modifier.fillMaxWidth().weight(1f)) {
                 when (state) {
                     ListUiState.Loading -> AppLoading()
 

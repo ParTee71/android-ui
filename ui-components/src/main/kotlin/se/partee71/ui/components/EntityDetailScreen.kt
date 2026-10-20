@@ -3,7 +3,6 @@
 package se.partee71.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.RowScope
@@ -48,7 +47,8 @@ data class DetailHeader(val title: String, val subtitle: String? = null)
  * **Flikläge** ([onBack] = `null`): stor topprad som fälls ihop vid rullning, med [title], [subtitle] och
  * [actions], ingen tillbakapil, och plats för verktygsraden ([LocalBottomClearance]) under innehållet och
  * meddelandena. [snackbar] är skärmens meddelandeyta – skärmen kan visa egna meddelanden (Ångra,
- * bekräftelser) i samma yta som felen.
+ * bekräftelser) i samma yta som felen. Med [onRefresh] dras skärmen ned för att uppdatera, med indikatorn
+ * överst så länge [refreshing] är sant; utan (standard) finns ingen gest.
  *
  * @param header vad huvudet visar för ett laddat värde; `null` = inget huvud.
  * @param menu valen i "Fler val" (arkivera/återställ m.m.) för ett laddat värde.
@@ -70,6 +70,8 @@ fun <T> EntityDetailScreen(
     snackbar: SnackbarHostState = remember { SnackbarHostState() },
     sectionGap: Dp = Spacing.m,
     leading: @Composable (T) -> Unit = {},
+    refreshing: Boolean = false,
+    onRefresh: (() -> Unit)? = null,
     content: @Composable ColumnScope.(T) -> Unit
 ) {
     ErrorSnackbar(error, snackbar, onShown = onErrorShown)
@@ -97,7 +99,7 @@ fun <T> EntityDetailScreen(
             }
         }
     ) { padding ->
-        Box(Modifier.fillMaxSize().padding(padding)) {
+        RefreshBox(refreshing, onRefresh, Modifier.fillMaxSize().padding(padding)) {
             when (state) {
                 DetailUiState.Loading -> AppLoading(Modifier.padding(bottom = clearance))
 

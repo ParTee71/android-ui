@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.heightIn
@@ -22,7 +23,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
@@ -30,8 +33,11 @@ import androidx.compose.ui.unit.dp
 import se.partee71.ui.theme.AppTheme
 import se.partee71.ui.theme.Spacing
 
-/** En flik i [AppFloatingToolbar]. */
-data class ToolbarItem(val label: String, @param:DrawableRes val icon: Int)
+/**
+ * En flik i [AppFloatingToolbar]. [badgeCount] är ett märke med antal i `secondary` bredvid en ovald fliks
+ * ikon (Fonders Beslut: "3 nya"); `null` eller 0 ritar inget märke.
+ */
+data class ToolbarItem(val label: String, @param:DrawableRes val icon: Int, val badgeCount: Int? = null)
 
 /** Huvudknappen bredvid flikarna i [AppFloatingToolbar], t.ex. plusknappen som loggar. */
 data class ToolbarAction(val label: String, @param:DrawableRes val icon: Int, val onClick: () -> Unit)
@@ -93,6 +99,9 @@ fun AppFloatingToolbar(
 private fun ToolbarTab(item: ToolbarItem, selected: Boolean, onClick: () -> Unit) {
     val background = if (selected) MaterialTheme.colorScheme.primary else AppTheme.extendedColors.toolbar
     val content = if (selected) MaterialTheme.colorScheme.onPrimary else AppTheme.extendedColors.onToolbar
+    // Märket syns bara på en ovald flik; antalet läses med flikens namn, inte en gång till.
+    val badge = item.badgeCount?.takeIf { it > 0 && !selected }
+    val description = badge?.let { stringResource(R.string.toolbar_badge_format, item.label, it) } ?: item.label
     Row(
         Modifier
             .heightIn(min = TAB_HEIGHT)
@@ -100,7 +109,7 @@ private fun ToolbarTab(item: ToolbarItem, selected: Boolean, onClick: () -> Unit
             .clip(AppTheme.shapes.pill)
             .background(background)
             .selectable(selected = selected, role = Role.Tab, onClick = onClick)
-            .semantics { contentDescription = item.label }
+            .semantics { contentDescription = description }
             .animateContentSize(MaterialTheme.motionScheme.defaultSpatialSpec())
             .padding(horizontal = Spacing.m),
         verticalAlignment = Alignment.CenterVertically,
@@ -108,8 +117,27 @@ private fun ToolbarTab(item: ToolbarItem, selected: Boolean, onClick: () -> Unit
     ) {
         Icon(painterResource(item.icon), contentDescription = null, tint = content, modifier = Modifier.size(ICON))
         if (selected) Text(item.label, style = AppTheme.typography.button, color = content, maxLines = 1)
+        badge?.let { ToolbarBadge(it) }
+    }
+}
+
+/** Märket med antal på en flik: runt, i `secondary`, och bredare för tvåsiffriga tal. */
+@Composable
+private fun ToolbarBadge(count: Int) {
+    Box(
+        Modifier
+            .clearAndSetSemantics {}
+            .heightIn(min = BADGE)
+            .widthIn(min = BADGE)
+            .background(MaterialTheme.colorScheme.secondary, AppTheme.shapes.pill)
+            .padding(horizontal = BADGE_PADDING),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(count.toString(), style = AppTheme.typography.caption, color = MaterialTheme.colorScheme.onSecondary, maxLines = 1)
     }
 }
 
 private val TAB_HEIGHT = 48.dp
 private val ICON = 22.dp
+private val BADGE = 18.dp
+private val BADGE_PADDING = 5.dp

@@ -5,7 +5,7 @@ eventuellt Fonder): ett tema-API och de delade komponenterna, så att samma elem
 beter sig likadant i alla appar och bara finns på ett ställe. Varje app behåller sina egna
 färger, former och typsnitt och skickar in dem i temat.
 
-**Version:** 0.5.0 · Material 3 `1.5.0-beta01` (Expressive) · Compose BOM `2026.09.00` ·
+**Version:** 0.6.0 · Material 3 `1.5.0-beta01` (Expressive) · Compose BOM `2026.09.00` ·
 Kotlin `2.4.20` · AGP `9.4.1` · compileSdk 37 · minSdk 30.
 
 ## Moduler
@@ -39,8 +39,8 @@ dependencyResolutionManagement {
 }
 ```
 
-och i versionskatalogen/byggfilen `implementation("se.partee71.ui:ui-components:0.5.0")` och
-`testImplementation("se.partee71.ui:ui-testing:0.5.0")`.
+och i versionskatalogen/byggfilen `implementation("se.partee71.ui:ui-components:0.6.0")` och
+`testImplementation("se.partee71.ui:ui-testing:0.6.0")`.
 
 - **CI i appen:** `GITHUB_TOKEN` räcker när paketet gett apprepot läsåtkomst
   (paketets inställningar → *Manage Actions access*) och jobbet har `permissions: packages: read`.
@@ -114,13 +114,13 @@ tomt läge, fel, "Försök igen", "Släng ändringar?", sparfel och arkivering b
 ```kotlin
 EntityListScreen(title, state: ListUiState<T>, empty: EmptyContent, add: AddAction?, key, …,
     onRetry, group: ((T) -> ListGroup)?, archive: ListArchive?, subtitle, onBack, actions, header,
-    subgroup, filter, topBarSize = TopBarSize.Large, footer, row)
+    subgroup, filter, topBarSize = TopBarSize.Large, footer, refreshing = false, onRefresh = null, row)
 EntityEditScreen(title, state: EditorUiState<*>, events: EditorEvents, onSave, onClose, …,
     saveLabel, onArchive, onRestore, delete: DeleteAction?, onRetry, onSaved = onClose, formError,
     horizontalMargin = Spacing.xl, content)
 EntityDetailScreen(state: DetailUiState<T>, header: ((T) -> DetailHeader)?, onBack: (() -> Unit)?, …,
     title, onEdit, menu, onRetry, error: UiError?, onErrorShown, subtitle, actions, snackbar,
-    sectionGap = Spacing.m, leading, content)
+    sectionGap = Spacing.m, leading, refreshing = false, onRefresh = null, content)
 ```
 
 | Skillnad mellan apparna | Parameter | ReseApoteket | Dagboken |
@@ -135,6 +135,7 @@ EntityDetailScreen(state: DetailUiState<T>, header: ((T) -> DetailHeader)?, onBa
 | Detaljens flikläge | `onBack = null`: stor topprad som fälls ihop, `title`, `subtitle`, `actions`, `snackbar`, plats för verktygsraden | – | som förut |
 | Detaljens avstånd mellan sektioner | `sectionGap` | `Spacing.m` (standard) | `Spacing.l` |
 | Hopfällbar grupp | rubriken minst 48 dp, läses som knapp ("Fäll ut"/"Fäll ihop"), chevronen fjädrar | nytt | som förut |
+| Dra för att uppdatera | `onRefresh` (standard `null` = ingen gest) och `refreshing` i listan och detaljen; Expressive-indikatorn överst, ytan har taggen `ENTITY_REFRESH_TAG` | – | – (Fonder: Fondsök, Portfölj, Fonddetalj) |
 
 - **Arkivering:** `ArchiveActions(scope, errors, setArchived, undoFormat, errorMessage)` är logiken i
   listans ViewModel (svep, Ångra, "Visa arkiverade", `offerUndo` för annat än arkivering);
@@ -173,11 +174,11 @@ inte använder ramen rätt.
 |---|---|---|
 | `AddSplitButton` | "Lägg till ▾" – huvudåtgärd och pil med fler val | Menyn är en lucka: `menu = items.asSplitMenu()` (ReseApoteket) i stället för Dagbokens `menuItems` |
 | `AppBottomSheet` | Ark med rubrik; innehållet rullar alltid. `error` (`UiError`), `dirty` ("Släng ändringar?" vid bakåt, svep och tryck utanför), `canDismiss`, `hide`, `footer` (knappraden står fast i botten) | Dagbokens parametrar; ReseApotekets rullning gäller också med `footer` |
-| `AppButton` | Den enda knappen: Primary, Secondary, Text, Destructive; `loading`, `compact` | – |
-| `AppCard` | Kortet: `tone`, `contentColor` (standard `null`: ärver omgivande `LocalContentColor`; Dagboken `onSurface`) | ReseApotekets `ApotekCard` heter nu `AppCard` |
+| `AppButton` | Den enda knappen: Primary, Secondary, Outlined, Text, Destructive; `loading`, `compact`, `contentDescription`. Appens knappstil `AppButtonStyle(minHeight, morph, secondaryTone)` sätts en gång med `LocalAppButtonStyle` (eller parametern `style`); `AppButtonDefaults.MinHeight` 56 dp / `CompactHeight` 40 dp | Fonder: `AppButtonStyle(minHeight = 40.dp, morph = true, secondaryTone = Tone.Primary)`; standard bevarar ReseApoteket och Dagboken |
+| `AppCard` | Kortet: `tone`, `contentColor` (standard `null`: ärver omgivande `LocalContentColor`; Dagboken `onSurface`), `onClick` (hela kortet en nod). Appens kortstil `AppCardStyle(border, padding, segmentGap, contentSpacing)` med `LocalAppCardStyle` (eller `style`); ett tonat kort har ingen kontur | ReseApotekets `ApotekCard` heter nu `AppCard`. Fonder: kontur 1 dp `outlineVariant`, `padding = Spacing.l`, `contentSpacing = 0.dp`; Filled/Error är Fonders egna toner |
 | `AppDivider` | Avdelare mellan rader i ett kort | – |
 | `AppFilterChip` | Filterchip; `icon`, `onLongClick`, `value` (värde efter etiketten), `emphasized` (det aktiva bland flera valda), `pending` (`ChipPending`: väntande läge, tonat med streckad kant, ikon och tilläggstext) | `chipColors()` är publik för egna chips |
-| `AppFloatingToolbar` | Toppnivånavigeringen: flytande flikar; `action` (`ToolbarAction`, huvudknapp i `secondary` till höger – Dagboken). `LocalBottomClearance`, `FloatingToolbarClearance`, `NoBottomClearance` | – |
+| `AppFloatingToolbar` | Toppnivånavigeringen: flytande flikar; `action` (`ToolbarAction`, huvudknapp i `secondary` till höger – Dagboken), `ToolbarItem.badgeCount` (märke med antal i `secondary` på en ovald flik, läses "Beslut, 3 nya" – Fonder). `LocalBottomClearance`, `FloatingToolbarClearance`, `NoBottomClearance` | – |
 | `AppIconButton` | Ikonknapp, minst 48 dp, alltid `contentDescription` | – |
 | `AppLoading` | Expressive laddningsindikator mitt på ytan | – |
 | `AppMenu` | Menyn bakom ⋮ (`AppMenuItem`: `icon`, `destructive`, `section` (rubrik), `checked` (kryssrad som håller menyn öppen), `supporting`/`supportingTone` (undertext), `muted` (dämpad etikett)) | `section`, `checked` från Dagboken; `asSplitMenu()` från ReseApoteket |
@@ -186,8 +187,8 @@ inte använder ramen rätt.
 | `AppSnackbarHost` | Den enda platsen där meddelanden visas | – |
 | `AppTextField` | Det enda textfältet; `maxLength` (`AppTextFieldDefaults.SHORT_MAX_LENGTH` 200 / `LONG_MAX_LENGTH` 2000), `maxLines`, `suffix`, `valueIsPlaceholder` | Dagboken anger `maxLength = 5000` för långa fält |
 | `AppTopBar` | Skärmrubriken, stor eller liten | Synkindikatorn är appens: den sätts som `LocalTopBarStatus` (eller parametern `status`) |
-| `CardSegment` | Ett segment i ett sammanfogat kort (`top`, `bottom`), `contentColor` | – |
-| `CheckRow` | Kryssrad med morfande kryss; `onClick` (krysset blir egen knapp), `accent`, `note`, `menu` (långtryck + ⋮, går före bubblan), `below`, `enabled` | Dagbokens `note`, `menu`, `below`, `enabled` |
+| `CardSegment` | Ett segment i ett sammanfogat kort (`top`, `bottom`), `contentColor`, `onClick`, `style`; med kontur delar bitarna skiljelinje | Ersätter Fonders `AppCardGroupPosition` |
+| `CheckRow` | Kryssrad med morfande kryss; `onClick` (krysset blir egen knapp), `accent`, `note`, `menu` (långtryck + ⋮, går före bubblan), `below`, `enabled`, `done`/`tinted` (standard `checked`: överstruken och tonad) | Dagbokens `note`, `menu`, `below`, `enabled`; Fonder `done = false, tinted = false` för "ta med" |
 | `ChipRow` | En rad chips som bryts eller rullar | – |
 | `ChoiceChips` | Ett val av flera som chips; `onClear` (Dagboken). Överlagring för flerval (`selected: Set<T>`, `onToggle`) | Flervalet är nytt (Dagboken #321) |
 | `ChoiceGrid` | Val i ett rutnät med egen cell; `selectionRing` (Dagboken: ring i primärfärg) | – |
@@ -199,15 +200,15 @@ inte använder ramen rätt.
 | `DiscardChangesDialog` | "Släng ändringar?" – "Släng" / "Fortsätt redigera" | Var appens egen |
 | `EmojiPicker` | Välj en emoji ur `emojis` med `ChoiceGrid`s ring | Listan krävs – apparnas listor (`PERSON_EMOJIS`, `DEFAULT_EMOJIS`) stannar i appen; ReseApotekets egen markering ersätts av ringen |
 | `EmptyState` | Tomt läge med ikon, rubrik, text och knapp; `compact` (Dagboken) | – |
-| `EntityDetailScreen` | Detaljramen: huvud, sektioner, Redigera och meny; underskärm med `title`, flikläge med `onBack = null` | Union av apparnas; se Ramarna |
+| `EntityDetailScreen` | Detaljramen: huvud, sektioner, Redigera och meny; underskärm med `title`, flikläge med `onBack = null`; `onRefresh`/`refreshing` | Union av apparnas; se Ramarna |
 | `EntityEditScreen` | Redigeringsramen med `EditorState`: Spara, "Släng ändringar?", sparfel, arkivera/återställ/radera, `formError`, tangentbordet | Union av apparnas; se Ramarna |
-| `EntityListScreen` | Listramen: laddar, tomt, fel, grupper i kort, kolumner efter bredd, arkivering, `filter`, `footer` | Union av apparnas; se Ramarna |
+| `EntityListScreen` | Listramen: laddar, tomt, fel, grupper i kort, kolumner efter bredd, arkivering, `filter`, `footer`, `onRefresh`/`refreshing` | Union av apparnas; se Ramarna |
 | `ErrorSnackbar` | Visar ett `UiError` en gång; `template` (t.ex. "Synken nekades: %1$s"), `duration` | Tar `UiError` i stället för appens `DataError` |
 | `ExampleChips` | Exempel att trycka in i ett fält | – |
 | `FieldError` | Felraden under ett fält | – |
 | `GroupLabel` | Etikett över en grupp | – |
-| `InfoPill` | Pill med ton; `trailingIcon`, `role`, `onClickLabel`, `colors` | – |
-| `ItemRow` | Den enda listraden: `leading`, `trailing`, `tinted`, `done`, `accent`, `navigates`, `inactive`, `below`, `titleHighlight`, `icon`, `belowAlignsWithTitle`. Kapad titel: långtryck visar hela titeln och undertexten i en bubbla | Dagbokens `icon`, `belowAlignsWithTitle`; bubblan nu även i Dagboken. Avståndet titel–undertext: `LocalItemRowTextGap` (standard 2 dp; Dagboken `Spacing.xs`) |
+| `InfoPill` | Pill med ton; `trailingIcon`, `role`, `onClickLabel`, `colors`, `shape` (standard `AppTheme.shapes.pill`), `contentDescription` | Fonder: `shape = AppTheme.shapes.smallTile`, egna toner för Tertiary/Neutral |
+| `ItemRow` | Den enda listraden: `leading`, `trailing`, `tinted`, `done`, `accent`, `navigates`, `inactive`, `below`, `titleHighlight`, `icon`, `belowAlignsWithTitle`, `overline` (ovanför titeln), `titleStyle` (standard `itemTitle`). Kapad titel: långtryck visar hela titeln och undertexten i en bubbla | Dagbokens `icon`, `belowAlignsWithTitle`; bubblan nu även i Dagboken. Avståndet titel–undertext: `LocalItemRowTextGap` (standard 2 dp; Dagboken `Spacing.xs`) |
 | `ItemRowText` | Listradens titel och undertext, för appens egna kort | Dagbokens `RowText` |
 | `LabeledGroup` | Etikett, hjälptext och innehåll; `helperAbove` (Dagboken) | – |
 | `LeadingSlot` | 48 dp-ruta för det ledande elementet, så att titlarna linjerar | – |
@@ -221,8 +222,8 @@ inte använder ramen rätt.
 | `SectionHeader` | Sektionsrubrik med antal; `countTone` | – |
 | `SuggestionField` | Textfält med förslag (`Suggestion`) i ett kort under, antalet läses upp | – |
 | `SwipeToHide` | Arkivera/dölj med svep åt vänster, och samma åtgärd för TalkBack | – |
-| `SwitchControl` | Själva växeln, för appens kort med reglage | – |
-| `SwitchRow` | Inställningsrad med växel; `onClick` (växeln blir egen kontroll), `inactive` (tonar ned texten, inte växeln) | Dagbokens `inactive` |
+| `SwitchControl` | Själva växeln, för appens kort med reglage; `enabled` | – |
+| `SwitchRow` | Inställningsrad med växel; `onClick` (växeln blir egen kontroll), `inactive` (tonar ned texten, inte växeln), `enabled` (låser växeln) | Dagbokens `inactive`; Fonders `enabled` |
 | `TimeField` | Tidsfält (kotlinx `LocalTime`) som öppnar `TimePickerPopup` | – |
 | `TimePickerPopup` | Tidsväljaren som dialog | – |
 | `UndoSnackbar` | "Arkiverad – Ångra" för `UndoRequest`; `format`, `onRequestDismissed` | – |
@@ -256,6 +257,7 @@ pusha taggar och använder därför den manuella vägen.
 
 | Version | Ändring |
 |---|---|
+| 0.6.0 | Det Fonder behöver för att byta till biblioteket utan att ändra utseende: `ButtonVariant.Outlined`, `AppButton.contentDescription` och knappstilen `AppButtonStyle` (höjd, formmorf, tonad färg) via `LocalAppButtonStyle`; `AppCard.onClick` och kortstilen `AppCardStyle` (kontur, luft, delad kontur mellan bitar) via `LocalAppCardStyle`; `ItemRow` `overline`/`titleStyle`; `CheckRow` `done`/`tinted`; `SwitchRow.enabled`; `InfoPill` `shape`/`contentDescription`; `ToolbarItem.badgeCount`; dra för att uppdatera (`refreshing`/`onRefresh`) i `EntityListScreen` och `EntityDetailScreen`. Standardvärdena bevarar utseendet |
 | 0.5.0 | `AppFilterChip` får `value`, `emphasized` och `pending` (`ChipPending`), `AppMenuItem` får `supporting`, `supportingTone` och `muted` – för Dagbokens symptomstyrka och vid behov-markeringar. Standardvärdena bevarar utseendet |
 | 0.4.0 | Ramarna `EntityListScreen`, `EntityEditScreen` och `EntityDetailScreen` med båda apparnas parametrar, `ArchiveActions`/`ListArchive` för arkivering, och modulen `ui-testing` med kontraktstesterna för apparnas skärmar. Kolumner efter bredd och tangentbordshanteringen gäller båda apparna |
 | 0.3.0 | 19 komponenter till, som glidit isär mellan apparna, i en version med båda apparnas parametrar: listrader (`ItemRow` med bubbla vid kapad titel, `CheckRow`, `PausableRow`, `SwitchRow`), `SuggestionField`, `AppBottomSheet` med "Släng ändringar?" och fast knapprad, `AppMenu` med avdelningar och kryssrader, `AppFloatingToolbar` med huvudknapp, `ConfirmDialog`, `DeleteConfirmDialog`, `DiscardChangesDialog`, `DateField` med rensa-knapp och `EmojiPicker` |

@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -67,6 +68,8 @@ object ItemRowDefaults {
  * [belowAlignsWithTitle] börjar den i linje med titeln efter en [leading] i [LeadingSlot].
  * [titleHighlight] färgmarkerar en del av titeln – det man sökt på i ett [SuggestionField].
  * [icon] är en dekorativ ikon först i raden i en [LeadingSlot] (val i ark och kort) – i stället för [leading].
+ * [overline] står ovanför titeln i samma textkolumn (Fonders tillståndschip och ursprung); [titleStyle] är
+ * titelns stil, standard `AppTheme.typography.itemTitle` (Fonder: en mindre titel bredvid datum och belopp).
  *
  * Kapas titeln visar ett långtryck hela titeln och undertexten i en bubbla; annars är långtrycket radens.
  */
@@ -86,7 +89,9 @@ fun ItemRow(
     below: (@Composable () -> Unit)? = null,
     titleHighlight: IntRange? = null,
     @DrawableRes icon: Int? = null,
-    belowAlignsWithTitle: Boolean = false
+    belowAlignsWithTitle: Boolean = false,
+    overline: (@Composable () -> Unit)? = null,
+    titleStyle: TextStyle = AppTheme.typography.itemTitle
 ) {
     val start: (@Composable () -> Unit)? = leading ?: icon?.let { { LeadingSlot { Icon(painterResource(it), contentDescription = null) } } }
     val end: (@Composable () -> Unit)? = if (navigates) {
@@ -109,7 +114,9 @@ fun ItemRow(
         accent = accent,
         below = below,
         titleHighlight = titleHighlight,
-        belowAlignsWithTitle = belowAlignsWithTitle
+        belowAlignsWithTitle = belowAlignsWithTitle,
+        overline = overline,
+        titleStyle = titleStyle
     )
 }
 
@@ -133,7 +140,9 @@ internal fun ItemRowLayout(
     titleHighlight: IntRange? = null,
     textInactive: Boolean = false,
     belowAlignsWithTitle: Boolean = false,
-    bubble: Boolean = true
+    bubble: Boolean = true,
+    overline: (@Composable () -> Unit)? = null,
+    titleStyle: TextStyle = AppTheme.typography.itemTitle
 ) {
     val tint = AppTheme.extendedColors.rowTint
     // Bubblan finns bara när titeln faktiskt kapas – annars är långtrycket radens som vanligt.
@@ -158,7 +167,16 @@ internal fun ItemRowLayout(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.m)) {
                 leading?.invoke()
-                RowText(title, subtitle, done, titleHighlight, onTitleOverflow = { truncated = it }, modifier = Modifier.weight(1f).inactive(textInactive))
+                RowText(
+                    title,
+                    subtitle,
+                    done,
+                    titleHighlight,
+                    onTitleOverflow = { truncated = it },
+                    modifier = Modifier.weight(1f).inactive(textInactive),
+                    overline = overline,
+                    titleStyle = titleStyle
+                )
                 trailing?.invoke()
             }
             below?.let { content ->
@@ -179,14 +197,24 @@ fun ItemRowText(title: String?, subtitle: String?, modifier: Modifier = Modifier
 }
 
 @Composable
-private fun RowText(title: String?, subtitle: String?, done: Boolean, titleHighlight: IntRange?, onTitleOverflow: (Boolean) -> Unit, modifier: Modifier = Modifier) {
+private fun RowText(
+    title: String?,
+    subtitle: String?,
+    done: Boolean,
+    titleHighlight: IntRange?,
+    onTitleOverflow: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    overline: (@Composable () -> Unit)? = null,
+    titleStyle: TextStyle = AppTheme.typography.itemTitle
+) {
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
     val decoration = if (done) TextDecoration.LineThrough else null
     Column(modifier, verticalArrangement = Arrangement.spacedBy(LocalItemRowTextGap.current)) {
+        overline?.invoke()
         if (title != null) {
             Text(
                 highlighted(title, titleHighlight),
-                style = AppTheme.typography.itemTitle,
+                style = titleStyle,
                 color = if (done) muted else MaterialTheme.colorScheme.onSurface,
                 textDecoration = decoration,
                 maxLines = TITLE_MAX_LINES,
