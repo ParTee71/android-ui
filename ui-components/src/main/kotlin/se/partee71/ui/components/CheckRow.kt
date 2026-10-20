@@ -31,6 +31,9 @@ import se.partee71.ui.theme.AppTheme
  * åtgärder: de nås med långtryck på raden och med `⋮` sist – där menyn finns går den före bubblan med hela
  * titeln. [below] står under titel och undertext, i linje med titeln. [enabled] = false visar tillståndet
  * utan att det går att växla; TalkBack läser en inaktiv kryssruta, och en [menu] nås ändå.
+ *
+ * [done] (överstruken, dämpad titel) och [tinted] (tonad rad) följer [checked] som standard – en avprickad
+ * sak är klar. För ett val där kryss betyder "ta med" (Fonders import) sätts de till `false`.
  */
 @Composable
 fun CheckRow(
@@ -46,7 +49,9 @@ fun CheckRow(
     note: String = "",
     menu: List<AppMenuItem> = emptyList(),
     below: (@Composable () -> Unit)? = null,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    done: Boolean = checked,
+    tinted: Boolean = checked
 ) {
     var menuOpen by remember { mutableStateOf(false) }
     val toggle = Modifier.toggleable(value = checked, enabled = enabled, role = Role.Checkbox, onValueChange = onCheckedChange)
@@ -101,8 +106,8 @@ fun CheckRow(
             LeadingSlot(button) { MorphingCheck(checked) }
         },
         trailing = end,
-        tinted = checked,
-        done = checked,
+        tinted = tinted,
+        done = done,
         accent = accent,
         below = below,
         belowAlignsWithTitle = true,

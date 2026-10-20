@@ -14,8 +14,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import se.partee71.ui.theme.AppTheme
@@ -28,6 +31,9 @@ import se.partee71.ui.theme.ToneColors
  * [trailingIcon] efter den (t.ex. en rullgardinspil); med [onClick] är pillen en knapp med minst
  * 48 dp tryckyta (t.ex. synkindikatorn i [AppTopBar]), med [role] och [onClickLabel] för TalkBack.
  * [colors] ger en ton utanför [Tone] (t.ex. en känslas egen ton); standard färgerna för [tone].
+ * [shape] är pillens form, standard den runda `AppTheme.shapes.pill` (Fonder: `AppTheme.shapes.smallTile`).
+ * [contentDescription] läses av TalkBack i stället för texten när den är förkortad ("Risk 5/7" →
+ * "Risknivå 5 av 7"); `null` läser texten.
  */
 @Composable
 fun InfoPill(
@@ -39,11 +45,15 @@ fun InfoPill(
     @DrawableRes trailingIcon: Int? = null,
     role: Role = Role.Button,
     onClickLabel: String? = null,
-    colors: ToneColors = AppTheme.tone(tone)
+    colors: ToneColors = AppTheme.tone(tone),
+    shape: Shape = AppTheme.shapes.pill,
+    contentDescription: String? = null
 ) {
-    val click = onClick?.let { Modifier.minimumInteractiveComponentSize().clip(AppTheme.shapes.pill).clickable(onClickLabel = onClickLabel, role = role, onClick = it) } ?: Modifier
+    val click = onClick?.let { Modifier.minimumInteractiveComponentSize().clip(shape).clickable(onClickLabel = onClickLabel, role = role, onClick = it) } ?: Modifier
+    // Pillen läses som en nod med beskrivningen i stället för texten.
+    val described = contentDescription?.let { Modifier.semantics(mergeDescendants = true) { this.contentDescription = it } } ?: Modifier
     Row(
-        modifier.then(click).background(colors.container, AppTheme.shapes.pill).padding(horizontal = Spacing.m, vertical = Spacing.xs),
+        modifier.then(click).then(described).background(colors.container, shape).padding(horizontal = Spacing.m, vertical = Spacing.xs),
         horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
         verticalAlignment = Alignment.CenterVertically
     ) {

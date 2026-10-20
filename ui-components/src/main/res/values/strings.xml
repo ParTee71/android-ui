@@ -47,4 +47,6 @@
     <string name="collapse">Fäll ihop</string>
     <string name="expanded">Utfälld</string>
     <string name="collapsed">Hopfälld</string>
+    <!-- Flik med märke, för TalkBack: "Beslut, 3 nya" -->
+    <string name="toolbar_badge_format">%1$s, %2$d nya</string>
 </resources>
