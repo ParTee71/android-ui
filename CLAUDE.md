@@ -45,3 +45,5 @@ export LC_ALL=C.UTF-8                # annars kraschar kotlinc på svenska testn
 ```
 
 Android SDK i sessionen: `local.properties` med `sdk.dir=/opt/android-sdk` (gitignorerad). JDK 21.
+Maven Central nås i molnsessioner via Googles spegel: `.claude/hooks/session-start.sh` lägger
+`maven-central-mirror.init.gradle.kts` i `~/.gradle/init.d/`, så att Gradle slipper 429. CI påverkas inte.
