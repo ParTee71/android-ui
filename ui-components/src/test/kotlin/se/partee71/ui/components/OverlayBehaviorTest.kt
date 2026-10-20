@@ -167,6 +167,15 @@ class OverlayBehaviorTest {
     }
 
     @Test
+    fun `en dämpad menypost med undertext visar båda och går att välja`() {
+        var picked = 0
+        show { AppMenuPopup(listOf(AppMenuItem("Ipren 400 mg", { picked++ }, supporting = "Dagsgräns nådd · 2 av 2", muted = true)), expanded = true, onDismiss = {}) }
+        rule.onNodeWithText("Dagsgräns nådd · 2 av 2").assertIsDisplayed()
+        rule.onNodeWithText("Ipren 400 mg").performClick()
+        assertEquals(1, picked)
+    }
+
+    @Test
     fun `en avdelning får en rubrik där den börjar`() {
         var picked = ""
         show {
