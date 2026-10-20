@@ -2,6 +2,7 @@ package se.partee71.ui.components
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -27,11 +28,14 @@ import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
 import se.partee71.ui.theme.AppTheme
 import se.partee71.ui.theme.Spacing
+import se.partee71.ui.theme.Tone
 
 /**
  * Ett val i [AppMenu], [AppMenuPopup] eller [AddSplitButton] (via [asSplitMenu]). [destructive] färgar
  * det som radering. [section] är en avdelning med rubrik: där den börjar står en avdelare och rubriken
- * (t.ex. "Recept"); `null` = ingen rubrik.
+ * (t.ex. "Recept"); `null` = ingen rubrik. [supporting] är en undertext under etiketten, i [supportingTone]
+ * (t.ex. en varning) eller dämpad när den är `null`; [muted] tonar ned etiketten (något som inte går just nu
+ * men fortfarande kan väljas).
  */
 data class AppMenuItem(
     val label: String,
@@ -44,7 +48,10 @@ data class AppMenuItem(
      * TalkBack läser den som kryssruta, och menyn står kvar öppen så att flera kan väljas.
      * `null` (standard): ett vanligt val som stänger menyn.
      */
-    val checked: Boolean? = null
+    val checked: Boolean? = null,
+    val supporting: String? = null,
+    val supportingTone: Tone? = null,
+    val muted: Boolean = false
 )
 
 /** Menyn bakom "Fler val" (⋮): arkivera, radera, visa arkiverade m.m. */
@@ -79,7 +86,12 @@ fun AppMenuPopup(items: List<AppMenuItem>, expanded: Boolean, onDismiss: () -> U
                 if (index > 0) AppDivider(Modifier.padding(vertical = Spacing.xs))
                 GroupLabel(section, Modifier.padding(horizontal = Spacing.s, vertical = Spacing.xs))
             }
-            val color = if (item.destructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+            val color = when {
+                item.destructive -> MaterialTheme.colorScheme.error
+                item.muted -> MaterialTheme.colorScheme.onSurfaceVariant
+                else -> MaterialTheme.colorScheme.onSurface
+            }
+            val supportingColor = item.supportingTone?.let { AppTheme.tone(it).content } ?: MaterialTheme.colorScheme.onSurfaceVariant
             val checked = item.checked
             // En kryssrad visar bocken (eller håller platsen tom) och stänger inte menyn – flera kan väljas.
             val icon = if (checked == null) item.icon else R.drawable.ic_check.takeIf { checked }
@@ -92,7 +104,17 @@ fun AppMenuPopup(items: List<AppMenuItem>, expanded: Boolean, onDismiss: () -> U
                 }
             }
             DropdownMenuItem(
-                text = { Text(item.label, style = AppTheme.typography.body) },
+                text = {
+                    val supporting = item.supporting
+                    if (supporting == null) {
+                        Text(item.label, style = AppTheme.typography.body)
+                    } else {
+                        Column {
+                            Text(item.label, style = AppTheme.typography.body)
+                            Text(supporting, style = AppTheme.typography.caption, color = supportingColor)
+                        }
+                    }
+                },
                 onClick = {
                     if (checked == null) onDismiss()
                     item.onClick()

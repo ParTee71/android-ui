@@ -5,7 +5,7 @@ eventuellt Fonder): ett tema-API och de delade komponenterna, så att samma elem
 beter sig likadant i alla appar och bara finns på ett ställe. Varje app behåller sina egna
 färger, former och typsnitt och skickar in dem i temat.
 
-**Version:** 0.4.0 · Material 3 `1.5.0-beta01` (Expressive) · Compose BOM `2026.09.00` ·
+**Version:** 0.5.0 · Material 3 `1.5.0-beta01` (Expressive) · Compose BOM `2026.09.00` ·
 Kotlin `2.4.20` · AGP `9.4.1` · compileSdk 37 · minSdk 30.
 
 ## Moduler
@@ -39,8 +39,8 @@ dependencyResolutionManagement {
 }
 ```
 
-och i versionskatalogen/byggfilen `implementation("se.partee71.ui:ui-components:0.4.0")` och
-`testImplementation("se.partee71.ui:ui-testing:0.4.0")`.
+och i versionskatalogen/byggfilen `implementation("se.partee71.ui:ui-components:0.5.0")` och
+`testImplementation("se.partee71.ui:ui-testing:0.5.0")`.
 
 - **CI i appen:** `GITHUB_TOKEN` räcker när paketet gett apprepot läsåtkomst
   (paketets inställningar → *Manage Actions access*) och jobbet har `permissions: packages: read`.
@@ -176,11 +176,11 @@ inte använder ramen rätt.
 | `AppButton` | Den enda knappen: Primary, Secondary, Text, Destructive; `loading`, `compact` | – |
 | `AppCard` | Kortet: `tone`, `contentColor` (standard `null`: ärver omgivande `LocalContentColor`; Dagboken `onSurface`) | ReseApotekets `ApotekCard` heter nu `AppCard` |
 | `AppDivider` | Avdelare mellan rader i ett kort | – |
-| `AppFilterChip` | Filterchip; `icon`, `onLongClick` | `chipColors()` är publik för egna chips |
+| `AppFilterChip` | Filterchip; `icon`, `onLongClick`, `value` (värde efter etiketten), `emphasized` (det aktiva bland flera valda), `pending` (`ChipPending`: väntande läge, tonat med streckad kant, ikon och tilläggstext) | `chipColors()` är publik för egna chips |
 | `AppFloatingToolbar` | Toppnivånavigeringen: flytande flikar; `action` (`ToolbarAction`, huvudknapp i `secondary` till höger – Dagboken). `LocalBottomClearance`, `FloatingToolbarClearance`, `NoBottomClearance` | – |
 | `AppIconButton` | Ikonknapp, minst 48 dp, alltid `contentDescription` | – |
 | `AppLoading` | Expressive laddningsindikator mitt på ytan | – |
-| `AppMenu` | Menyn bakom ⋮ (`AppMenuItem`: `icon`, `destructive`, `section` (rubrik), `checked` (kryssrad som håller menyn öppen)) | `section`, `checked` från Dagboken; `asSplitMenu()` från ReseApoteket |
+| `AppMenu` | Menyn bakom ⋮ (`AppMenuItem`: `icon`, `destructive`, `section` (rubrik), `checked` (kryssrad som håller menyn öppen), `supporting`/`supportingTone` (undertext), `muted` (dämpad etikett)) | `section`, `checked` från Dagboken; `asSplitMenu()` från ReseApoteket |
 | `AppMenuPopup` | Själva menyn, för egna knappar som öppnar en meny | Publik (Dagboken använder den direkt) |
 | `AppSegmentedChoice` | Ett val av få alternativ som segmentknappar | – |
 | `AppSnackbarHost` | Den enda platsen där meddelanden visas | – |
@@ -256,6 +256,7 @@ pusha taggar och använder därför den manuella vägen.
 
 | Version | Ändring |
 |---|---|
+| 0.5.0 | `AppFilterChip` får `value`, `emphasized` och `pending` (`ChipPending`), `AppMenuItem` får `supporting`, `supportingTone` och `muted` – för Dagbokens symptomstyrka och vid behov-markeringar. Standardvärdena bevarar utseendet |
 | 0.4.0 | Ramarna `EntityListScreen`, `EntityEditScreen` och `EntityDetailScreen` med båda apparnas parametrar, `ArchiveActions`/`ListArchive` för arkivering, och modulen `ui-testing` med kontraktstesterna för apparnas skärmar. Kolumner efter bredd och tangentbordshanteringen gäller båda apparna |
 | 0.3.0 | 19 komponenter till, som glidit isär mellan apparna, i en version med båda apparnas parametrar: listrader (`ItemRow` med bubbla vid kapad titel, `CheckRow`, `PausableRow`, `SwitchRow`), `SuggestionField`, `AppBottomSheet` med "Släng ändringar?" och fast knapprad, `AppMenu` med avdelningar och kryssrader, `AppFloatingToolbar` med huvudknapp, `ConfirmDialog`, `DeleteConfirmDialog`, `DiscardChangesDialog`, `DateField` med rensa-knapp och `EmojiPicker` |
 | 0.2.0 | Modulen `ui-common` (fel-API, list-, detalj- och formulärtillstånd) och 22 komponenter till: fält, val, kort, pills, snackbars, tomt läge och läsfel; flerval i `ChoiceChips` |

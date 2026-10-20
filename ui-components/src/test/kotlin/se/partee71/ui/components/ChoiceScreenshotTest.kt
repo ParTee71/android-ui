@@ -35,6 +35,18 @@ class ChoiceScreenshotTest {
     }
 
     @Test
+    fun `AppFilterChip - värde, framhävt och väntande`() = captureLightAndDark("AppFilterChip_varde_vantande") {
+        SampleSheet {
+            ChipRow {
+                AppFilterChip("Huvudvärk", selected = true, onClick = {}, value = "4", emphasized = true)
+                AppFilterChip("Illamående", selected = true, onClick = {}, value = "2")
+                AppFilterChip("Yrsel", selected = false, onClick = {})
+                AppFilterChip("Ipren 400 mg", selected = false, onClick = {}, pending = ChipPending(R.drawable.ic_clock, "från 15:40", "för tidigt, nästa dos från 15:40"))
+            }
+        }
+    }
+
+    @Test
     fun `ChoiceChips - ett val och flera val`() = captureLightAndDark("ChoiceChips_ett_och_flera") {
         SampleSheet {
             ChoiceChips(listOf("Tablett", "Kapsel", "Kräm", "Droppar"), "Kapsel", {}, label = { it })

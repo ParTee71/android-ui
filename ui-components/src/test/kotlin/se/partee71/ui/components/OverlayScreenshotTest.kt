@@ -19,6 +19,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import se.partee71.ui.components.testing.Blue
 import se.partee71.ui.components.testing.SampleSheet
 import se.partee71.ui.components.testing.captureLightAndDark
 import se.partee71.ui.components.testing.captureScreenLightAndDark
@@ -26,6 +27,7 @@ import se.partee71.ui.components.testing.clickWithoutRipple
 import se.partee71.ui.components.testing.sampleOffline
 import se.partee71.ui.theme.AppTheme
 import se.partee71.ui.theme.Spacing
+import se.partee71.ui.theme.Tone
 
 /** Skärmdumpar av ark, menyer, dialoger, datumfält, verktygsrad och emojiväljare (ljust + mörkt). */
 @RunWith(RobolectricTestRunner::class)
@@ -95,7 +97,8 @@ class OverlayScreenshotTest {
                         AppMenuItem("Betapred 0,5 mg", {}, section = "Recept"),
                         AppMenuItem("Levaxin 100 µg", {}, section = "Recept"),
                         AppMenuItem("Mående", {}, section = "Serier", checked = true),
-                        AppMenuItem("Sömn", {}, section = "Serier", checked = false)
+                        AppMenuItem("Sömn", {}, section = "Serier", checked = false),
+                        AppMenuItem("Ipren 400 mg", {}, R.drawable.ic_clock, section = "Vid behov", supporting = "För tidigt · från 16:00", supportingTone = Tone.Blue, muted = true)
                     ),
                     expanded = true,
                     onDismiss = {}

@@ -19,6 +19,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.text.AnnotatedString
 import kotlin.test.assertEquals
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
@@ -62,6 +63,25 @@ class ChoiceBehaviorTest {
         assertEquals("Fler val", node.config[SemanticsActions.OnLongClick].label)
         rule.onNodeWithText("Alvedon").performSemanticsAction(SemanticsActions.OnLongClick)
         assertEquals(1, longClicks)
+    }
+
+    @Test
+    fun `filterchipet med värde visar och läser värdet efter etiketten, och det framhävda är fortfarande valt`() {
+        show { AppFilterChip("Huvudvärk", selected = true, onClick = {}, value = "4", emphasized = true) }
+        rule.onNodeWithText("Huvudvärk", useUnmergedTree = true).assertExists()
+        rule.onNodeWithText("4", useUnmergedTree = true).assertExists()
+        rule.onNode(SemanticsMatcher.expectValue(SemanticsProperties.Text, listOf(AnnotatedString("Huvudvärk"), AnnotatedString("4")))).assertIsSelected()
+    }
+
+    @Test
+    fun `det väntande filterchipet läser beskrivningen i stället för tilläggstexten och går att trycka på`() {
+        var clicks = 0
+        show { AppFilterChip("Ipren 400 mg", selected = false, onClick = { clicks++ }, pending = ChipPending(R.drawable.ic_clock, "från 15:40", "för tidigt, nästa dos från 15:40")) }
+        val node = rule.onNodeWithText("Ipren 400 mg")
+        node.assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "för tidigt, nästa dos från 15:40"))
+        node.assert(SemanticsMatcher.expectValue(SemanticsProperties.Text, listOf(AnnotatedString("Ipren 400 mg"))))
+        node.performClick()
+        assertEquals(1, clicks)
     }
 
     @Test
