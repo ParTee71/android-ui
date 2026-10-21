@@ -5,6 +5,9 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
@@ -16,6 +19,7 @@ import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertTouchHeightIsEqualTo
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -81,6 +85,15 @@ class SurfaceBehaviorTest {
         show { SectionHeader("Mediciner", icon = R.drawable.ic_box, count = "4 / 5") }
         rule.onNodeWithText("Mediciner").assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading))
         rule.onNodeWithText("4 / 5").assertExists()
+    }
+
+    @Test
+    fun `sektionsrubriken visar laddning bara när den arbetar, med titeln i beskrivningen`() {
+        var working by mutableStateOf(true)
+        show { SectionHeader("Byten", count = "2 väntar", working = working) }
+        rule.onNodeWithContentDescription("Uppdaterar Byten").assertExists()
+        working = false
+        rule.onNodeWithContentDescription("Uppdaterar Byten").assertDoesNotExist()
     }
 
     @Test

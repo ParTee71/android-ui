@@ -179,6 +179,18 @@ class ComponentScreenshotTest {
         }
     }
 
+    @Test
+    fun `SectionHeader - arbetar`() {
+        // Indikatorn snurrar för evigt: klockan står still och går en fast tid före bilden.
+        rule.mainClock.autoAdvance = false
+        rule.captureLightAndDark("SectionHeader_arbetar", settle = {
+            mainClock.advanceTimeBy(CONFETTI_MIDDLE)
+            waitForIdle()
+        }) {
+            SampleSheet { SectionHeader("Byten", count = "2 väntar på dig", working = true) }
+        }
+    }
+
     private companion object {
         const val CONFETTI_MIDDLE = 500L
         const val STEPS = 10
