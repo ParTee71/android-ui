@@ -14,6 +14,7 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -27,6 +28,12 @@ fun AppLoading(modifier: Modifier = Modifier) {
     Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         LoadingIndicator(Modifier.semantics { contentDescription = description })
     }
+}
+
+/** Liten laddningsindikator i en rad (t.ex. [SectionHeader] med `working`), läst som [description]. */
+@Composable
+internal fun InlineLoading(description: String, color: Color, modifier: Modifier = Modifier) {
+    LoadingIndicator(modifier.semantics { contentDescription = description }, color = color)
 }
 
 /** Ytan som dras ned för att uppdatera i `EntityListScreen` och `EntityDetailScreen` (finns bara med `onRefresh`). */

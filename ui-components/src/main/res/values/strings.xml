@@ -6,6 +6,7 @@
 <resources>
     <string name="more_options">Fler val</string>
     <string name="loading">Laddar</string>
+    <string name="section_working">Uppdaterar %1$s</string>
     <string name="back">Tillbaka</string>
     <string name="archive">Arkivera</string>
     <string name="ok">OK</string>

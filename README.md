@@ -5,7 +5,7 @@ eventuellt Fonder): ett tema-API och de delade komponenterna, så att samma elem
 beter sig likadant i alla appar och bara finns på ett ställe. Varje app behåller sina egna
 färger, former och typsnitt och skickar in dem i temat.
 
-**Version:** 0.7.0 · Material 3 `1.5.0-beta01` (Expressive) · Compose BOM `2026.09.00` ·
+**Version:** 0.8.0 · Material 3 `1.5.0-beta01` (Expressive) · Compose BOM `2026.09.00` ·
 Kotlin `2.4.20` · AGP `9.4.1` · compileSdk 37 · minSdk 30.
 
 ## Moduler
@@ -39,8 +39,8 @@ dependencyResolutionManagement {
 }
 ```
 
-och i versionskatalogen/byggfilen `implementation("se.partee71.ui:ui-components:0.7.0")` och
-`testImplementation("se.partee71.ui:ui-testing:0.7.0")`.
+och i versionskatalogen/byggfilen `implementation("se.partee71.ui:ui-components:0.8.0")` och
+`testImplementation("se.partee71.ui:ui-testing:0.8.0")`.
 
 - **CI i appen:** `GITHUB_TOKEN` räcker när paketet gett apprepot läsåtkomst
   (paketets inställningar → *Manage Actions access*) och jobbet har `permissions: packages: read`.
@@ -222,7 +222,7 @@ inte använder ramen rätt.
 | `PausableRow` | Rad som kan pausas: typ som pill, nedtonad "Pausat"; `pillTone` krävs | Tonen är appens (ReseApoteket `Tone.Blue`, Dagboken `Tone.Neutral`) |
 | `PickerField` | Fält som öppnar en väljare; `emptyLabel`, `contentLabel` | – |
 | `QuantityStepper` | − värde +; `step`, `valueText`, `buttonSize` (`QuantityStepperDefaults.ButtonSize` 44 dp, `TouchTargetButtonSize` 48 dp) | – |
-| `SectionHeader` | Sektionsrubrik med antal; `countTone` | – |
+| `SectionHeader` | Sektionsrubrik med antal; `countTone`; laddningsindikator med `working` | – |
 | `SuggestionField` | Textfält med förslag (`Suggestion`) i ett kort under, antalet läses upp | – |
 | `SwipeToHide` | Arkivera/dölj med svep åt vänster, och samma åtgärd för TalkBack | – |
 | `SwitchControl` | Själva växeln, för appens kort med reglage; `enabled` | – |
@@ -260,6 +260,7 @@ pusha taggar och använder därför den manuella vägen.
 
 | Version | Ändring |
 |---|---|
+| 0.8.0 | `SectionHeader.working` (och `workingDescription`): laddningsindikator efter rubriken medan sektionen hämtar data – för Fonders avsnittsrubriker. Standardvärdet bevarar utseendet |
 | 0.7.0 | För Fonders flikar: knappar i tomt läge utan lägg till (`EmptyAction`, `EmptyContent.actions`, `EmptyState.actions`), egen felrubrik i listan (`EntityListScreen.errorTitle`), tillbakapilens stil (`TopBarBackStyle` via `LocalTopBarBackStyle` / `AppTopBar.backStyle`) och `AppIconButton.tone`; listkontraktet prövar `emptyActions` och `errorTitle`. Standardvärdena bevarar utseendet |
 | 0.6.0 | Det Fonder behöver för att byta till biblioteket utan att ändra utseende: `ButtonVariant.Outlined`, `AppButton.contentDescription` och knappstilen `AppButtonStyle` (höjd, formmorf, tonad färg) via `LocalAppButtonStyle`; `AppCard.onClick` och kortstilen `AppCardStyle` (kontur, luft, delad kontur mellan bitar) via `LocalAppCardStyle`; `ItemRow` `overline`/`titleStyle`; `CheckRow` `done`/`tinted`; `SwitchRow.enabled`; `InfoPill` `shape`/`contentDescription`; `ToolbarItem.badgeCount`; dra för att uppdatera (`refreshing`/`onRefresh`) i `EntityListScreen` och `EntityDetailScreen`. Standardvärdena bevarar utseendet |
 | 0.5.0 | `AppFilterChip` får `value`, `emphasized` och `pending` (`ChipPending`), `AppMenuItem` får `supporting`, `supportingTone` och `muted` – för Dagbokens symptomstyrka och vid behov-markeringar. Standardvärdena bevarar utseendet |
