@@ -1,5 +1,6 @@
 package se.partee71.ui.components
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -72,12 +74,9 @@ fun QuantityStepper(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Spacing.xs)
     ) {
-        FilledIconButton(
-            onClick = { onValueChange((value - step).coerceIn(range)) },
-            modifier = Modifier.size(buttonSize),
-            enabled = enabled && value > range.first,
-            colors = colors
-        ) { Icon(painterResource(R.drawable.ic_remove), stringResource(R.string.decrease_format, label)) }
+        StepButton(R.drawable.ic_remove, stringResource(R.string.decrease_format, label), enabled && value > range.first, buttonSize, colors) {
+            onValueChange((value - step).coerceIn(range))
+        }
         val shown = valueText?.invoke(value)
         Text(
             shown ?: value.toString(),
@@ -89,12 +88,16 @@ fun QuantityStepper(
                 liveRegion = LiveRegionMode.Polite
             }
         )
-        FilledIconButton(
-            onClick = { onValueChange((value + step).coerceIn(range)) },
-            modifier = Modifier.size(buttonSize),
-            enabled = enabled && value < range.last,
-            colors = colors
-        ) { Icon(painterResource(R.drawable.ic_add), stringResource(R.string.increase_format, label)) }
+        StepButton(R.drawable.ic_add, stringResource(R.string.increase_format, label), enabled && value < range.last, buttonSize, colors) {
+            onValueChange((value + step).coerceIn(range))
+        }
+    }
+}
+
+@Composable
+private fun StepButton(@DrawableRes icon: Int, description: String, enabled: Boolean, size: Dp, colors: IconButtonColors, onClick: () -> Unit) {
+    FilledIconButton(onClick = onClick, modifier = Modifier.size(size), enabled = enabled, colors = colors) {
+        Icon(painterResource(icon), description)
     }
 }
 

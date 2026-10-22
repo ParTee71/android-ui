@@ -31,10 +31,15 @@ data class AppShapes(
     val iconTile: Shape = RoundedCornerShape(40.dp)
 ) {
     /** Kortet. */
-    val card: Shape get() = RoundedCornerShape(cardRadius)
+    val card: Shape = RoundedCornerShape(cardRadius)
+
+    // De fyra bitarna skapas en gång – en lat lista ber om en för varje rad.
+    private val segments = listOf(false, true).flatMap { top -> listOf(false, true).map { bottom -> segment(top, bottom) } }
 
     /** En bit av ett kort som delas upp i rader (lat lista): rundad bara upptill och/eller nedtill. */
-    fun cardSegment(top: Boolean, bottom: Boolean): Shape = RoundedCornerShape(
+    fun cardSegment(top: Boolean, bottom: Boolean): Shape = segments[(if (top) 2 else 0) + if (bottom) 1 else 0]
+
+    private fun segment(top: Boolean, bottom: Boolean): Shape = RoundedCornerShape(
         topStart = if (top) cardRadius else 0.dp,
         topEnd = if (top) cardRadius else 0.dp,
         bottomStart = if (bottom) cardRadius else 0.dp,

@@ -219,7 +219,7 @@ private fun <T> ListContent(
     // räknare) får inte samma nyckel i listan.
     val ids = remember(groups) {
         val seen = mutableMapOf<String, Int>()
-        groups.map { (head, _) -> head?.let { "${it.title}#${seen.merge(it.title, 1, Int::plus)}" } }
+        groups.map { (head, _) -> head?.let { seen.numbered(it.title) } }
     }
     // Utfällda grupper (bara de hopfällbara), efter rubrik; står kvar efter rotation och tillbaka.
     var expanded by rememberSaveable { mutableStateOf(emptyList<String>()) }
@@ -266,7 +266,7 @@ private fun <T> LazyListScope.groupRows(
     // inte första radens, som byts när en rad prickas av och flyttas sist.
     val seen = mutableMapOf<String, Int>()
     val lines = runs.flatMap { (sub, members) ->
-        val label = sub?.let { Line.Label<T>(it, "${it.title}#${seen.merge(it.title, 1, Int::plus)}") }
+        val label = sub?.let { Line.Label<T>(it, seen.numbered(it.title)) }
         listOfNotNull(label) + members.chunked(columns).map { Line.Rows(it) }
     }
     lines.forEachIndexed { position, line ->
@@ -310,6 +310,9 @@ private fun Segment(cards: Boolean, top: Boolean, bottom: Boolean, modifier: Mod
         CardSegment(top = top, bottom = bottom, modifier, content = content)
     }
 }
+
+/** "rubrik#n": n:te gången [title] förekommer – två rubriker med samma namn får aldrig samma nyckel. */
+private fun MutableMap<String, Int>.numbered(title: String): String = "$title#${merge(title, 1, Int::plus)}"
 
 /** En rad i listan: en undergruppsrubrik eller en eller flera rader (kolumner). */
 private sealed interface Line<T> {

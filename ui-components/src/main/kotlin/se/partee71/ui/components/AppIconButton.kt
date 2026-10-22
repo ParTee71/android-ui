@@ -30,7 +30,7 @@ fun AppIconButton(
     enabled: Boolean = true,
     tone: Tone? = null
 ) {
-    val sized = modifier.size(SIZE)
+    val sized = modifier.size(TOUCH_TARGET)
     val content: @Composable () -> Unit = { Icon(painterResource(icon), contentDescription) }
     val colors = tone?.let { AppTheme.tone(it) }
     when (variant) {
@@ -52,5 +52,3 @@ fun AppIconButton(
         )
     }
 }
-
-private val SIZE = 48.dp
