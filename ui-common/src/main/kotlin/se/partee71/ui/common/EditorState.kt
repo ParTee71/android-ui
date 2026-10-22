@@ -169,10 +169,7 @@ class EditorState<T>(
      * Lyckat → [EditorUiState.done]; fel → [EditorUiState.failure] och formuläret står kvar.
      */
     suspend fun save(write: suspend (T) -> Result<Unit>) {
-        // Ett dubbeltryck sparar inte två gånger, och medan det lagrade värdet laddas (eller inte
-        // gick att läsa) finns inget att spara – platshållaren får aldrig skriva över det.
-        val now = _state.value
-        if (now.saving || now.loading || now.loadError != null) return
+        if (busy) return
         attempted = true
         val current = compute(value, loading = false)
         show(current)
@@ -188,14 +185,17 @@ class EditorState<T>(
      * arkiverats eller raderats.
      */
     suspend fun run(action: suspend () -> Result<Unit>) {
-        // Som [save]: medan det lagrade värdet laddas, eller inte gick att läsa, finns inget att arkivera eller radera.
-        val now = _state.value
-        if (now.saving || now.loading || now.loadError != null) return
+        if (busy) return
         perform(written = value, closeIfChanged = true, action)
     }
 
+    /**
+     * Ett dubbeltryck sparar inte två gånger, och medan det lagrade värdet laddas (eller inte gick att
+     * läsa) finns inget att spara, arkivera eller radera – platshållaren får aldrig skriva över det.
+     */
+    private val busy: Boolean get() = _state.value.let { it.saving || it.loading || it.loadError != null }
+
     private suspend fun perform(written: T, closeIfChanged: Boolean, action: suspend () -> Result<Unit>) {
-        if (_state.value.saving) return
         _state.update { it.copy(saving = true) }
         val failure = action().uiErrorOrNull(errors, errorMessage)
         _state.update { it.copy(saving = false) }

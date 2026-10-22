@@ -37,7 +37,7 @@ fun CollapsibleHeader(expanded: Boolean, onToggle: () -> Unit, modifier: Modifie
     Row(
         modifier
             .fillMaxWidth()
-            .heightIn(min = HEADER_MIN_HEIGHT)
+            .heightIn(min = TOUCH_TARGET)
             .clip(AppTheme.shapes.row)
             .clickable(onClickLabel = labels.action, role = Role.Button, onClick = onToggle)
             .semantics { stateDescription = labels.state },
@@ -78,8 +78,5 @@ fun chevronRotation(expanded: Boolean): Float {
     )
     return rotation
 }
-
-/** En hopfällbar rubrik är minst en tryckyta hög. */
-private val HEADER_MIN_HEIGHT = 48.dp
 
 private const val HALF_TURN = 180f

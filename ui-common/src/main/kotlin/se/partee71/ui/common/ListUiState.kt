@@ -31,8 +31,7 @@ sealed interface ListUiState<out T> {
  * Som [asListUiState], men börjar om från [Loading][ListUiState.Loading] varje gång [retry]
  * emitterar – "Försök igen" i `EntityListScreen`.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
-fun <T> Flow<List<T>>.asListUiState(errors: ErrorMapper, retry: Flow<Unit>): Flow<ListUiState<T>> = retry.onStart { emit(Unit) }.flatMapLatest { asListUiState(errors) }
+fun <T> Flow<List<T>>.asListUiState(errors: ErrorMapper, retry: Flow<Unit>): Flow<ListUiState<T>> = retry.restarting { asListUiState(errors) }
 
 /** Den enda översättningen från en datalista till [ListUiState]; ett fel blir [errors]s [UiError]. */
 fun <T> Flow<List<T>>.asListUiState(errors: ErrorMapper): Flow<ListUiState<T>> = map { items -> items.toListUiState() }
@@ -59,11 +58,7 @@ class ListLoader<T>(source: Flow<List<T>>, scope: CoroutineScope, errors: ErrorM
      * laddning: listan från förra gången (kanske en annan användares efter kontobyte) visas aldrig
      * ens en bildruta när skärmen kommer tillbaka.
      */
-    val state: StateFlow<ListUiState<T>> = source.asListUiState(errors, retries).stateIn(
-        scope,
-        SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS, replayExpirationMillis = 0),
-        ListUiState.Loading
-    )
+    val state: StateFlow<ListUiState<T>> = source.asListUiState(errors, retries).stateWhileSubscribed(scope, ListUiState.Loading)
 
     fun onEvent(event: ListEvent) {
         when (event) {
@@ -86,8 +81,7 @@ sealed interface DetailUiState<out T> {
  * Den enda översättningen från ett dokument till [DetailUiState]; börjar om från laddning när
  * [retry] emitterar. Ett dokument som inte finns (raderat, eller en annans) är [ErrorMapper.notFound].
  */
-@OptIn(ExperimentalCoroutinesApi::class)
-fun <T : Any> Flow<T?>.asDetailUiState(errors: ErrorMapper, retry: Flow<Unit>): Flow<DetailUiState<T>> = retry.onStart { emit(Unit) }.flatMapLatest {
+fun <T : Any> Flow<T?>.asDetailUiState(errors: ErrorMapper, retry: Flow<Unit>): Flow<DetailUiState<T>> = retry.restarting {
     map<T?, DetailUiState<T>> { value -> value?.let { DetailUiState.Content(it) } ?: DetailUiState.Error(errors.notFound()) }
         .onStart { emit(DetailUiState.Loading) }
         .catch { emit(DetailUiState.Error(errors.map(it))) }
@@ -97,16 +91,20 @@ fun <T : Any> Flow<T?>.asDetailUiState(errors: ErrorMapper, retry: Flow<Unit>): 
 class DetailLoader<T : Any>(source: Flow<T?>, scope: CoroutineScope, errors: ErrorMapper) {
     private val retries = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
-    val state: StateFlow<DetailUiState<T>> = source.asDetailUiState(errors, retries).stateIn(
-        scope,
-        SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS, replayExpirationMillis = 0),
-        DetailUiState.Loading
-    )
+    /** Som [ListLoader.state]: utan prenumerant går tillståndet tillbaka till laddning. */
+    val state: StateFlow<DetailUiState<T>> = source.asDetailUiState(errors, retries).stateWhileSubscribed(scope, DetailUiState.Loading)
 
     fun retry() {
         retries.tryEmit(Unit)
     }
 }
+
+/** Kör [block] direkt och börjar om det varje gång flödet emitterar ("Försök igen"). */
+@OptIn(ExperimentalCoroutinesApi::class)
+private fun <R> Flow<Unit>.restarting(block: () -> Flow<R>): Flow<R> = onStart { emit(Unit) }.flatMapLatest { block() }
+
+/** Delat medan någon prenumererar; efter [STOP_TIMEOUT_MILLIS] utan börjar det om från [initial]. */
+private fun <S> Flow<S>.stateWhileSubscribed(scope: CoroutineScope, initial: S): StateFlow<S> = stateIn(scope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS, replayExpirationMillis = 0), initial)
 
 /** Hur länge ett flöde lever vidare utan prenumerant – överlever en rotation. */
 const val STOP_TIMEOUT_MILLIS = 5_000L

@@ -75,7 +75,7 @@ class ArchiveActions(
     val error: StateFlow<UiError?> = _error.asStateFlow()
 
     /** Aktiva först; arkiverade ([isArchived]) sist och bara när de visas. Ordningen i övrigt behålls. */
-    fun <T> visible(source: Flow<List<T>>, isArchived: (T) -> Boolean): Flow<List<T>> = combine(source, _showingArchived) { all, showArchived -> all.filter { showArchived || !isArchived(it) }.sortedBy(isArchived) }
+    fun <T> visible(source: Flow<List<T>>, isArchived: (T) -> Boolean): Flow<List<T>> = combine(source, _showingArchived) { all, showArchived -> if (showArchived) all.sortedBy(isArchived) else all.filterNot(isArchived) }
 
     /** Ett fel från en annan skrivning i samma lista (t.ex. en avprickning) visas på samma sätt. */
     fun report(error: UiError) {
@@ -100,20 +100,22 @@ class ArchiveActions(
             ArchiveEvent.Undo -> {
                 val request = _undo.value ?: return
                 val action = undoAction
-                _undo.value = null
-                undoAction = null
+                clearUndo()
                 scope.launch { failed(action?.invoke() ?: setArchived(request.id, false)) }
             }
 
-            ArchiveEvent.UndoDismissed -> {
-                _undo.value = null
-                undoAction = null
-            }
+            ArchiveEvent.UndoDismissed -> clearUndo()
 
             ArchiveEvent.ToggleArchived -> _showingArchived.value = !_showingArchived.value
 
             ArchiveEvent.ErrorShown -> _error.value = null
         }
+    }
+
+    /** Ångra och dess åtgärd släpps alltid tillsammans. */
+    private fun clearUndo() {
+        _undo.value = null
+        undoAction = null
     }
 
     /** Visar felet i [result], om det misslyckades; `true` = misslyckat. */

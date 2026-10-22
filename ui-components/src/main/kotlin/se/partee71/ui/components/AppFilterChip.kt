@@ -112,19 +112,18 @@ fun AppFilterChip(
 
 /** Samma färger för alla chips – även appens egna (t.ex. en personchip). */
 @Composable
-fun chipColors(): SelectableChipColors = FilterChipDefaults.filterChipColors(
-    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
-    selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-    labelColor = MaterialTheme.colorScheme.onSurface
-)
+fun chipColors(): SelectableChipColors = selectedChipColors(MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.onPrimaryContainer)
 
 /** Det aktiva chipet bland flera valda ([AppFilterChip] `emphasized`): fylld primärfärg. */
 @Composable
-private fun emphasizedChipColors(): SelectableChipColors = FilterChipDefaults.filterChipColors(
-    selectedContainerColor = MaterialTheme.colorScheme.primary,
-    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-    selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary,
+private fun emphasizedChipColors(): SelectableChipColors = selectedChipColors(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.onPrimary)
+
+/** Ett valt chip i [container] med [content] för text och ikon; ovalt som alla chips. */
+@Composable
+private fun selectedChipColors(container: Color, content: Color): SelectableChipColors = FilterChipDefaults.filterChipColors(
+    selectedContainerColor = container,
+    selectedLabelColor = content,
+    selectedLeadingIconColor = content,
     labelColor = MaterialTheme.colorScheme.onSurface
 )
 
