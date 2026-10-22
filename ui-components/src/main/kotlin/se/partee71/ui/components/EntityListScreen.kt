@@ -3,8 +3,6 @@
 package se.partee71.ui.components
 
 import androidx.annotation.DrawableRes
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -17,12 +15,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
@@ -36,17 +32,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import se.partee71.ui.common.ListUiState
@@ -341,35 +332,6 @@ private fun GroupHeader(group: ListGroup, size: Int, open: Boolean, onToggle: ()
     }
 }
 
-/**
- * Titelraden i det som fälls ihop (hopfällbara grupper): hela raden växlar, minst 48 dp, läses som knapp
- * med "Fäll ut"/"Fäll ihop" och läget som `stateDescription`; chevronen sist fjädrar ett halvt varv.
- */
-@Composable
-internal fun CollapsibleHeader(expanded: Boolean, onToggle: () -> Unit, modifier: Modifier = Modifier, content: @Composable RowScope.() -> Unit) {
-    val action = stringResource(if (expanded) R.string.collapse else R.string.expand)
-    val state = stringResource(if (expanded) R.string.expanded else R.string.collapsed)
-    val rotation by animateFloatAsState(if (expanded) HALF_TURN else 0f, MaterialTheme.motionScheme.defaultSpatialSpec(), label = "chevron")
-    Row(
-        modifier
-            .fillMaxWidth()
-            .heightIn(min = HEADER_MIN_HEIGHT)
-            .clip(AppTheme.shapes.row)
-            .clickable(onClickLabel = action, role = Role.Button, onClick = onToggle)
-            .semantics { stateDescription = state },
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Spacing.s)
-    ) {
-        content()
-        Icon(
-            painterResource(R.drawable.ic_expand_more),
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.rotate(rotation)
-        )
-    }
-}
-
 @Composable
 private fun SubgroupLabel(subgroup: ListSubgroup) {
     Text(
@@ -385,11 +347,6 @@ const val ENTITY_LIST_ADD_TAG = "entity-list-add"
 
 /** Plats under sista raden så att lägg till-knappen inte täcker den. */
 private val ADD_BUTTON_CLEARANCE = 80.dp
-
-/** En hopfällbar rubrik är minst en tryckyta hög. */
-private val HEADER_MIN_HEIGHT = 48.dp
-
-private const val HALF_TURN = 180f
 
 /** Hur många kolumner om minst [MIN_COLUMN_WIDTH] som får plats på [width] – alltid minst en. */
 internal fun columnsThatFit(width: Dp): Int = ((width + Spacing.xs) / (MIN_COLUMN_WIDTH + Spacing.xs)).toInt().coerceAtLeast(1)

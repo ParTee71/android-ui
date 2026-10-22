@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
@@ -23,6 +24,7 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.unit.dp
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -37,6 +39,7 @@ import se.partee71.ui.components.testing.sampleMenu
 import se.partee71.ui.theme.AppTheme
 import se.partee71.ui.theme.Spacing
 import se.partee71.ui.theme.Tone
+import se.partee71.ui.theme.ToneColors
 
 /**
  * Skärmdumpar (ljust + mörkt) av varje komponent med testtemat (ReseApotekets palett).
@@ -169,6 +172,28 @@ class ComponentScreenshotTest {
     }
 
     @Test
+    fun `SwipeBackground - arkivera och appens radera`() = captureLightAndDark("SwipeBackground_varianter") {
+        SampleSheet {
+            SwipeBackground("Arkivera", R.drawable.ic_archive, Modifier.height(SWIPE_HEIGHT))
+            SwipeBackground(
+                "Radera",
+                R.drawable.ic_delete,
+                Modifier.height(SWIPE_HEIGHT),
+                colors = ToneColors(MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.onErrorContainer),
+                shape = AppTheme.shapes.card
+            )
+        }
+    }
+
+    @Test
+    fun `CollapsibleHeader - hopfälld och utfälld`() = captureLightAndDark("CollapsibleHeader_varianter") {
+        SampleSheet {
+            SampleCard { CollapsibleHeader(false, {}) { SectionHeader("Recept", Modifier.weight(1f), count = "3") } }
+            SampleCard { CollapsibleHeader(true, {}) { Text("Anteckningar", Modifier.weight(1f), style = AppTheme.typography.itemTitle) } }
+        }
+    }
+
+    @Test
     fun `Confetti - mitt i regnet`() {
         rule.mainClock.autoAdvance = false
         rule.captureLightAndDark("Confetti_mitt", settle = {
@@ -194,5 +219,6 @@ class ComponentScreenshotTest {
     private companion object {
         const val CONFETTI_MIDDLE = 500L
         const val STEPS = 10
+        val SWIPE_HEIGHT = 64.dp
     }
 }

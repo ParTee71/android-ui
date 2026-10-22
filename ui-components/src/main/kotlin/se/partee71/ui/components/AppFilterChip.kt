@@ -1,8 +1,6 @@
 package se.partee71.ui.components
 
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -19,8 +17,6 @@ import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
@@ -29,11 +25,8 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.onLongClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.Dp
@@ -75,13 +68,11 @@ fun AppFilterChip(
     pending: ChipPending? = null
 ) {
     val leading = if (selected) R.drawable.ic_check else pending?.icon ?: icon
-    // Gesten startas en gång (nyckel Unit) och läser alltid den senaste callbacken.
-    val longClick by rememberUpdatedState(onLongClick)
     val dashColor = MaterialTheme.colorScheme.outline
     val shape = AppTheme.shapes.pill
     val chipModifier = Modifier
         .heightIn(min = CHIP_HEIGHT)
-        .then(if (onLongClick != null) Modifier.longPress({ longClick?.invoke() }, onLongClickLabel) else Modifier)
+        .longPress(onLongClickLabel, onLongClick)
     val chip = @Composable { chipModifier: Modifier ->
         FilterChip(
             selected = selected,
@@ -157,41 +148,6 @@ private fun Modifier.dashedOutline(shape: Shape, color: Color): Modifier = drawW
         drawOutline(outline, color, style = stroke)
     }
 }
-
-/**
- * Långtryck på en yta vars klick ägs av en Material-komponent utan eget långtryck. `FilterChip` tar bara
- * `onClick`, och `combinedClickable` går inte att lägga ovanpå utan att chipets egen klickyta (ripple,
- * vald-semantik, inaktivt läge) försvinner – därför en egen gest. Den läses före komponenten
- * ([PointerEventPass.Initial]) och avbryts, som `detectTapGestures`, när fingret släpps, rör sig mer än
- * touch slop (en rullning som börjar på chipet går vidare till listan) eller när någon annan förbrukat
- * gesten. Först efter ett långtryck förbrukas resten av gesten, så att komponentens klick inte också körs.
- * TalkBack får långtrycket som åtgärd.
- */
-private fun Modifier.longPress(onLongClick: () -> Unit, label: String?): Modifier = semantics {
-    onLongClick(label) {
-        onLongClick()
-        true
-    }
-}
-    .pointerInput(Unit) {
-        awaitEachGesture {
-            val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
-            val cancelled = withTimeoutOrNull(viewConfiguration.longPressTimeoutMillis) {
-                while (true) {
-                    val change = awaitPointerEvent(PointerEventPass.Initial).changes.firstOrNull { it.id == down.id }
-                    val moved = change != null && (change.position - down.position).getDistance() > viewConfiguration.touchSlop
-                    if (change == null || !change.pressed || change.isConsumed || moved) break
-                }
-                true
-            }
-            if (cancelled == true) return@awaitEachGesture
-            onLongClick()
-            do {
-                val event = awaitPointerEvent(PointerEventPass.Initial)
-                event.changes.forEach { it.consume() }
-            } while (event.changes.any { it.pressed })
-        }
-    }
 
 private val CHIP_HEIGHT = 36.dp
 private val ICON = 18.dp

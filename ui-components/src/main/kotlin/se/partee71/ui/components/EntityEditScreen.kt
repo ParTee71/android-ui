@@ -19,6 +19,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +35,12 @@ import kotlinx.coroutines.launch
 import se.partee71.ui.common.EditorEvents
 import se.partee71.ui.common.EditorUiState
 import se.partee71.ui.theme.Spacing
+
+/**
+ * Formulärets sidomarginal i [EntityEditScreen] (parametern `horizontalMargin`). Standard `Spacing.xl`
+ * (ReseApoteket); Dagboken sätter `Spacing.l` en gång i sitt tema.
+ */
+val LocalEditScreenMargin = compositionLocalOf { Spacing.xl }
 
 /** Det som händer efter "Släng ändringar": lämna formuläret, arkivera eller återställa. */
 private enum class AfterDiscard { Close, Archive, Restore }
@@ -53,7 +60,7 @@ private enum class AfterDiscard { Close, Archive, Restore }
  *   förbrukad så att navigeringsfältet inte räknas två gånger), så att det fokuserade fältet rullas fram
  *   ovanför tangentbordet.
  *
- * [horizontalMargin] är formulärets sidomarginal (standard `Spacing.xl`; Dagboken `Spacing.l`).
+ * [horizontalMargin] är formulärets sidomarginal (standard [LocalEditScreenMargin], `Spacing.xl`; Dagboken `Spacing.l`).
  *
  * @param events kvitterar [EditorUiState.done] och [EditorUiState.failure] när ramen hanterat dem –
  *   formulärets `EditorState`.
@@ -77,7 +84,7 @@ fun EntityEditScreen(
     onRetry: () -> Unit = {},
     onSaved: () -> Unit = onClose,
     formError: String? = null,
-    horizontalMargin: Dp = Spacing.xl,
+    horizontalMargin: Dp = LocalEditScreenMargin.current,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val snackbar = remember { SnackbarHostState() }

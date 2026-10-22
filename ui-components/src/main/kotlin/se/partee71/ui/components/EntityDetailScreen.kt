@@ -18,6 +18,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,14 +33,20 @@ import se.partee71.ui.common.UiError
 import se.partee71.ui.theme.AppTheme
 import se.partee71.ui.theme.Spacing
 
+/**
+ * Avståndet mellan sektionerna i [EntityDetailScreen] (parametern `sectionGap`). Standard `Spacing.m`
+ * (ReseApoteket); Dagboken sätter `Spacing.l` en gång i sitt tema.
+ */
+val LocalDetailSectionGap = compositionLocalOf { Spacing.m }
+
 /** Huvudet överst i en detaljskärm: bild ([EntityDetailScreen]s `leading`), namn och en rad under. */
 data class DetailHeader(val title: String, val subtitle: String? = null)
 
 /**
  * Den enda detaljskärmen: toppraden med tillbaka, "Redigera" ([onEdit]) och meny ([menu]); laddning →
  * [AppLoading]; fel → [LoadErrorState] med "Försök igen"; innehåll → ett centrerat huvud ([leading],
- * [header]) och sektioner ([content]) med [sectionGap] emellan. Ett fel från en åtgärd (t.ex. arkivera i
- * menyn, [error]) visas som meddelande.
+ * [header]) och sektioner ([content]) med [sectionGap] emellan (standard [LocalDetailSectionGap]). Ett fel
+ * från en åtgärd (t.ex. arkivera i menyn, [error]) visas som meddelande.
  *
  * En underskärm utan eget huvud ([header] = `null`) har [title]: titeln står då i den lilla toppraden
  * bredvid tillbakapilen och inget centrerat huvud visas.
@@ -68,7 +75,7 @@ fun <T> EntityDetailScreen(
     subtitle: String? = null,
     actions: @Composable RowScope.() -> Unit = {},
     snackbar: SnackbarHostState = remember { SnackbarHostState() },
-    sectionGap: Dp = Spacing.m,
+    sectionGap: Dp = LocalDetailSectionGap.current,
     leading: @Composable (T) -> Unit = {},
     refreshing: Boolean = false,
     onRefresh: (() -> Unit)? = null,

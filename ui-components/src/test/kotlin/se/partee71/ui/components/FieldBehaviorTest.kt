@@ -1,10 +1,14 @@
 package se.partee71.ui.components
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
@@ -12,13 +16,16 @@ import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTouchHeightIsEqualTo
+import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.width
 import kotlin.test.assertEquals
 import kotlinx.datetime.LocalTime
 import org.junit.Rule
@@ -164,5 +171,21 @@ class FieldBehaviorTest {
         rule.onNodeWithContentDescription("Öka minsta tid mellan doser").assertTouchHeightIsEqualTo(48.dp).performClick()
         assertEquals(30, value)
         rule.onNodeWithText("30 min").assertExists()
+    }
+
+    @Test
+    fun `stepperns knappstorlek är 44 dp som standard och appens via LocalQuantityStepperButtonSize`() {
+        show {
+            Column {
+                QuantityStepper(1, {}, "tabletter", Modifier.testTag("standard"))
+                CompositionLocalProvider(LocalQuantityStepperButtonSize provides QuantityStepperDefaults.TouchTargetButtonSize) {
+                    QuantityStepper(1, {}, "minuter", Modifier.testTag("appens"))
+                }
+            }
+        }
+        val standard = rule.onNodeWithTag("standard").getBoundsInRoot().width
+        val local = rule.onNodeWithTag("appens").getBoundsInRoot().width
+        // Två knappar, var och en 4 dp större.
+        assertEquals((QuantityStepperDefaults.TouchTargetButtonSize - QuantityStepperDefaults.ButtonSize) * 2, local - standard)
     }
 }

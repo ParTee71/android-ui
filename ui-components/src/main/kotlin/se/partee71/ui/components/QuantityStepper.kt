@@ -12,6 +12,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -36,12 +37,19 @@ object QuantityStepperDefaults {
 }
 
 /**
+ * Knappstorleken i [QuantityStepper] (parametern `buttonSize`). Standard [QuantityStepperDefaults.ButtonSize]
+ * (ReseApoteket); Dagboken sätter [QuantityStepperDefaults.TouchTargetButtonSize] en gång i sitt tema.
+ */
+val LocalQuantityStepperButtonSize = compositionLocalOf { QuantityStepperDefaults.ButtonSize }
+
+/**
  * Antal ± inom [range]. [label] beskriver vad som räknas ("doser per dag") och läses av
  * TalkBack på knapparna ("Minska doser per dag") och på värdet ("2 doser per dag"). [step] är
  * hur mycket ett tryck ändrar (t.ex. 5 för minuter). [valueText] visar värdet som text med sin
  * enhet ("4 h", "Ingen spärr" för 0); TalkBack läser då [label] och texten ("minsta tid mellan
  * doser 4 h") – [label] ska alltså inte ha någon enhet. Utan [valueText] visas talet och TalkBack
- * läser "2 doser per dag". [buttonSize] är knapparnas storlek ([QuantityStepperDefaults]).
+ * läser "2 doser per dag". [buttonSize] är knapparnas storlek ([QuantityStepperDefaults]; standard
+ * [LocalQuantityStepperButtonSize]).
  */
 @Composable
 fun QuantityStepper(
@@ -53,7 +61,7 @@ fun QuantityStepper(
     enabled: Boolean = true,
     step: Int = 1,
     valueText: (@Composable (Int) -> String)? = null,
-    buttonSize: Dp = QuantityStepperDefaults.ButtonSize
+    buttonSize: Dp = LocalQuantityStepperButtonSize.current
 ) {
     val colors = IconButtonDefaults.filledIconButtonColors(
         containerColor = AppTheme.extendedColors.card,

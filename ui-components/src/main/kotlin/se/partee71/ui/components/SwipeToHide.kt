@@ -1,5 +1,6 @@
 package se.partee71.ui.components
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,6 +19,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
@@ -28,6 +30,7 @@ import kotlinx.coroutines.launch
 import se.partee71.ui.components.R
 import se.partee71.ui.theme.AppTheme
 import se.partee71.ui.theme.Spacing
+import se.partee71.ui.theme.ToneColors
 
 /**
  * Arkivera/dölj med svep åt vänster: raden döljs direkt och [onHide] anropas; ramen visar
@@ -37,6 +40,7 @@ import se.partee71.ui.theme.Spacing
  * skärmläsare: [content] får en modifier som raden ska använda, så att åtgärden hamnar på
  * den nod som TalkBack läser. Står raden kvar efter svepet (t.ex. när arkiverade visas)
  * glider den tillbaka. Med [enabled] = `false` (en redan arkiverad rad) visas raden utan svep.
+ * Bakgrunden är [SwipeBackground] med [label], [icon] och [colors] (standard arkivera i primärtonen).
  */
 @Composable
 fun SwipeToHide(
@@ -44,26 +48,18 @@ fun SwipeToHide(
     modifier: Modifier = Modifier,
     label: String = stringResource(R.string.archive),
     enabled: Boolean = true,
+    @DrawableRes icon: Int = R.drawable.ic_archive,
+    colors: ToneColors = AppTheme.extendedColors.primaryTone,
     content: @Composable (Modifier) -> Unit
 ) {
     val hide by rememberUpdatedState(onHide)
     val state = rememberSwipeToDismissBoxState()
-    val tone = AppTheme.extendedColors.primaryTone
     val scope = rememberCoroutineScope()
     SwipeToDismissBox(
         state = state,
         backgroundContent = {
             // Utan svep syns aldrig bakgrunden, inte heller genom en nedtonad rad.
-            if (enabled) {
-                Row(
-                    Modifier.fillMaxSize().clip(AppTheme.shapes.row).background(tone.container).padding(horizontal = Spacing.l),
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.s, Alignment.End),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(painterResource(R.drawable.ic_archive), contentDescription = null, tint = tone.content)
-                    Text(label, style = AppTheme.typography.button, color = tone.content)
-                }
-            }
+            if (enabled) SwipeBackground(label, icon, colors = colors)
         },
         modifier = modifier,
         enableDismissFromStartToEnd = false,
@@ -98,6 +94,30 @@ fun SwipeToHide(
                 }
             )
         }
+    }
+}
+
+/**
+ * Det som syns bakom en rad som sveps åt vänster: [icon] och [label] i högerkanten på en yta i [colors]
+ * med formen [shape] (standard radens). Bara en bild av svepet – åtgärden ger svepkomponenten
+ * ([SwipeToHide]) eller appens egen; en app som har åtgärden på annat ställe för TalkBack kan dölja
+ * bilden med `Modifier.clearAndSetSemantics {}` i [modifier]. Standardvärdena är [SwipeToHide]s arkivera.
+ */
+@Composable
+fun SwipeBackground(
+    label: String,
+    @DrawableRes icon: Int,
+    modifier: Modifier = Modifier,
+    colors: ToneColors = AppTheme.extendedColors.primaryTone,
+    shape: Shape = AppTheme.shapes.row
+) {
+    Row(
+        modifier.fillMaxSize().clip(shape).background(colors.container).padding(horizontal = Spacing.l),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s, Alignment.End),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(painterResource(icon), contentDescription = null, tint = colors.content)
+        Text(label, style = AppTheme.typography.button, color = colors.content)
     }
 }
 
