@@ -6,6 +6,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
@@ -373,6 +374,20 @@ class EditorStateTest {
         testScheduler.runCurrent()
         assertNull(loader.stored.value)
         assertEquals(TestError.NotFound, editor.state.value.loadError?.cause)
+    }
+
+    @Test
+    fun `Försök igen medan en läsning pågår visar inte den avbrutna läsningen som läsfel`() = runTest {
+        val editor = EditorState(Form(), validator, TestErrors, loading = true)
+        val slow = CompletableDeferred<Form>()
+        var reads = 0
+        // Som datalagret brukar läsa: runCatching gör även avbrottet till ett Result.
+        val loader = EditorLoader(editor, backgroundScope, read = { if (++reads == 1) runCatching { slow.await() } else runCatching { awaitCancellation() } })
+        testScheduler.runCurrent()
+        loader.retry()
+        testScheduler.runCurrent()
+        assertNull(editor.state.value.loadError)
+        assertTrue(editor.state.value.loading, "den nya läsningen pågår")
     }
 
     @Test

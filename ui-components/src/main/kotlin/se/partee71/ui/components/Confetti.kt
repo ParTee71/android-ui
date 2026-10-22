@@ -27,7 +27,8 @@ import se.partee71.ui.theme.ExtendedColors
  * Kort konfettiregn som belöning (allt packat, dagen klar). Dekorativt och blockerar ingenting; ritas med
  * `Canvas`, utan bibliotek. Samma [seed] ger samma bitar (deterministiska skärmdumpar).
  * [onFinished] anropas när regnet är över – så att det spelas en gång, inte vid nästa visning.
- * [colors] är bitarnas färger i tur och ordning; standard appens färgserie ([ExtendedColors.accents]).
+ * [colors] är bitarnas färger i tur och ordning; standard (och om listan är tom) appens färgserie
+ * ([ExtendedColors.accents]).
  */
 @Composable
 fun Confetti(
@@ -46,7 +47,8 @@ fun Confetti(
             finished()
         }
     }
-    val pieces = remember(seed, colors) { pieces(seed, colors) }
+    val palette = colors.ifEmpty { AppTheme.extendedColors.accents }
+    val pieces = remember(seed, palette) { pieces(seed, palette) }
     Canvas(modifier.clearAndSetSemantics {}) {
         val t = progress.value
         if (!play || t <= 0f || t >= 1f) return@Canvas

@@ -5,7 +5,7 @@ eventuellt Fonder): ett tema-API och de delade komponenterna, så att samma elem
 beter sig likadant i alla appar och bara finns på ett ställe. Varje app behåller sina egna
 färger, former och typsnitt och skickar in dem i temat.
 
-**Version:** 0.9.0 · Material 3 `1.5.0-beta01` (Expressive) · Compose BOM `2026.09.00` ·
+**Version:** 0.9.1 · Material 3 `1.5.0-beta01` (Expressive) · Compose BOM `2026.09.00` ·
 Kotlin `2.4.20` · AGP `9.4.1` · compileSdk 37 · minSdk 30.
 
 ## Moduler
@@ -39,8 +39,8 @@ dependencyResolutionManagement {
 }
 ```
 
-och i versionskatalogen/byggfilen `implementation("se.partee71.ui:ui-components:0.9.0")` och
-`testImplementation("se.partee71.ui:ui-testing:0.9.0")`.
+och i versionskatalogen/byggfilen `implementation("se.partee71.ui:ui-components:0.9.1")` och
+`testImplementation("se.partee71.ui:ui-testing:0.9.1")`.
 
 - **CI i appen:** `GITHUB_TOKEN` räcker när paketet gett apprepot läsåtkomst
   (paketets inställningar → *Manage Actions access*) och jobbet har `permissions: packages: read`.
@@ -267,6 +267,7 @@ pusha taggar och använder därför den manuella vägen.
 
 | Version | Ändring |
 |---|---|
+| 0.9.1 | Rättningar från en granskning: Ångra får sina 5 s från att meddelandet syns, inte medan det väntar bakom ett annat; två grupper med samma rubrik kraschar inte listan; "Försök igen" under en pågående läsning visar inte den avbrutna som läsfel; formulärets meny (arkivera, radera) visas först när det lagrade är läst; `Confetti` med tom `colors` tar appens färgserie; `Modifier.longPress` avbryts när komponenten själv förbrukar gesten. Utseendet är oförändrat |
 | 0.9.0 | Det Dagboken har egna kopior av blir publikt: `CollapsibleHeader`, `expandLabels`/`ExpandLabels` och `chevronRotation`; `Modifier.longPress` med `haptic` och `LongPressSemantics` (och en gest som inte startar om när lambdan byts); `SwipeBackground` och `SwipeToHide` `icon`/`colors`; `LocalEditScreenMargin`, `LocalDetailSectionGap` och `LocalQuantityStepperButtonSize` som standard för `horizontalMargin`, `sectionGap` och `buttonSize`. Standardvärdena bevarar utseendet |
 | 0.8.0 | `SectionHeader.working` (och `workingDescription`): laddningsindikator efter rubriken medan sektionen hämtar data – för Fonders avsnittsrubriker. Standardvärdet bevarar utseendet |
 | 0.7.0 | För Fonders flikar: knappar i tomt läge utan lägg till (`EmptyAction`, `EmptyContent.actions`, `EmptyState.actions`), egen felrubrik i listan (`EntityListScreen.errorTitle`), tillbakapilens stil (`TopBarBackStyle` via `LocalTopBarBackStyle` / `AppTopBar.backStyle`) och `AppIconButton.tone`; listkontraktet prövar `emptyActions` och `errorTitle`. Standardvärdena bevarar utseendet |

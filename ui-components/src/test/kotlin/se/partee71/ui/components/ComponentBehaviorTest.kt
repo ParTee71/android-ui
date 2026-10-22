@@ -172,6 +172,14 @@ class ComponentBehaviorTest {
     }
 
     @Test
+    fun `konfetti utan egna färger tar appens färgserie i stället för att krascha`() {
+        var finished = 0
+        show { Confetti(colors = emptyList(), onFinished = { finished++ }) }
+        rule.waitForIdle()
+        assertEquals(1, finished)
+    }
+
+    @Test
     fun `en rad utan svep har ingen arkivera-åtgärd`() {
         show { SwipeToHide(onHide = {}, enabled = false) { SampleRow("Solkräm", it, onClick = {}) } }
         rule.onNodeWithText("Solkräm").assert(SemanticsMatcher.keyNotDefined(SemanticsActions.CustomActions))

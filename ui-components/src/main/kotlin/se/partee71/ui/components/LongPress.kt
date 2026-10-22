@@ -88,6 +88,8 @@ private class LongPressNode(var haptic: Boolean, var onLongPress: () -> Unit) :
                 val change = awaitPointerEvent(PointerEventPass.Initial).changes.firstOrNull { it.id == down.id }
                 val moved = change != null && (change.position - down.position).getDistance() > viewConfiguration.touchSlop
                 if (change == null || !change.pressed || change.isConsumed || moved) break
+                // Komponenten och listan förbrukar först i Main – samma händelse syns förbrukad i Final.
+                if (awaitPointerEvent(PointerEventPass.Final).changes.firstOrNull { it.id == down.id }?.isConsumed != false) break
             }
             true
         }

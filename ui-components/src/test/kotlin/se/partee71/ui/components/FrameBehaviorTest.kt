@@ -19,6 +19,7 @@ import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -94,6 +95,14 @@ class FrameBehaviorTest {
         val last = rule.onNodeWithText("Plåster").fetchSemanticsNode().positionInRoot
         val footer = rule.onNodeWithText("Visa äldre").fetchSemanticsNode().positionInRoot
         assertTrue(footer.y > last.y, "sidfoten står efter grupperna")
+    }
+
+    @Test
+    fun `två grupper med samma rubrik men olika räknare visas båda`() {
+        val rows = listOf("Solkräm" to "1 / 2", "Plåster" to "2 / 2")
+        list(ListUiState.Content(rows.toImmutableList()), key = { it.first }, group = { ListGroup("Idag", count = it.second) }) { ItemRow(it.first) }
+        assertEquals(2, rule.onAllNodesWithText("Idag").fetchSemanticsNodes().size)
+        rule.onNodeWithText("Plåster").assertIsDisplayed()
     }
 
     @Test
@@ -239,6 +248,19 @@ class FrameBehaviorTest {
         rule.onNodeWithContentDescription("Fler val").performClick()
         rule.onNodeWithText("Återställ").performClick()
         assertEquals(1 to 1, archived to restored)
+    }
+
+    @Test
+    fun `medan formuläret laddas eller inte gick att läsa finns ingen meny att arkivera eller radera i`() {
+        var state by mutableStateOf(EditorUiState("", loading = true))
+        rule.setContent {
+            TestTheme { EntityEditScreen("Solkräm", state, EditorEvents.None, {}, {}, onArchive = {}, delete = DeleteAction("Radera Solkräm?", "Det går inte att ångra.") {}) {} }
+        }
+        rule.onNodeWithContentDescription("Fler val").assertDoesNotExist()
+        state = EditorUiState("", loadError = sampleOffline())
+        rule.onNodeWithContentDescription("Fler val").assertDoesNotExist()
+        state = EditorUiState("Solkräm")
+        rule.onNodeWithContentDescription("Fler val").assertExists()
     }
 
     @Test
