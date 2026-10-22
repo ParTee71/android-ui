@@ -5,6 +5,7 @@ import android.view.View
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -13,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.StateRestorationTester
@@ -23,6 +25,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
@@ -51,6 +54,7 @@ import se.partee71.ui.components.testing.SampleFailure
 import se.partee71.ui.components.testing.SampleSwatches
 import se.partee71.ui.components.testing.TestTheme
 import se.partee71.ui.components.testing.sampleOffline
+import se.partee71.ui.theme.Spacing
 
 /**
  * Ramarna (EntityListScreen, EntityEditScreen, EntityDetailScreen) utöver kontrakten i `ui-testing`:
@@ -387,5 +391,41 @@ class FrameBehaviorTest {
     private companion object {
         /** En kort snackbar (4 s) plus animationen ut. */
         const val SNACKBAR_GONE_MILLIS = 6_000L
+    }
+
+    @Test
+    fun `formulärets sidomarginal är Spacing xl som standard och appens via LocalEditScreenMargin`() {
+        var margin: Dp? by mutableStateOf(null)
+        rule.setContent {
+            TestTheme {
+                val form = @Composable { EntityEditScreen("Solkräm", EditorUiState("Solkräm"), EditorEvents.None, {}, {}) { Text("Fält") } }
+                margin?.let { CompositionLocalProvider(LocalEditScreenMargin provides it) { form() } } ?: form()
+            }
+        }
+        assertEquals(Spacing.xl, rule.onNodeWithText("Fält").getBoundsInRoot().left)
+        margin = Spacing.l
+        rule.waitForIdle()
+        assertEquals(Spacing.l, rule.onNodeWithText("Fält").getBoundsInRoot().left)
+    }
+
+    @Test
+    fun `avståndet mellan detaljens sektioner är Spacing m som standard och appens via LocalDetailSectionGap`() {
+        var gap: Dp? by mutableStateOf(null)
+        fun between() = rule.onNodeWithText("Andra").getBoundsInRoot().top - rule.onNodeWithText("Första").getBoundsInRoot().bottom
+        rule.setContent {
+            TestTheme {
+                val detail = @Composable {
+                    EntityDetailScreen(DetailUiState.Content("Förkylning"), header = null, onBack = {}) {
+                        Text("Första")
+                        Text("Andra")
+                    }
+                }
+                gap?.let { CompositionLocalProvider(LocalDetailSectionGap provides it) { detail() } } ?: detail()
+            }
+        }
+        assertEquals(Spacing.m, between())
+        gap = Spacing.l
+        rule.waitForIdle()
+        assertEquals(Spacing.l, between())
     }
 }

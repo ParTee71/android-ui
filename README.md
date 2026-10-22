@@ -5,7 +5,7 @@ eventuellt Fonder): ett tema-API och de delade komponenterna, så att samma elem
 beter sig likadant i alla appar och bara finns på ett ställe. Varje app behåller sina egna
 färger, former och typsnitt och skickar in dem i temat.
 
-**Version:** 0.8.0 · Material 3 `1.5.0-beta01` (Expressive) · Compose BOM `2026.09.00` ·
+**Version:** 0.9.0 · Material 3 `1.5.0-beta01` (Expressive) · Compose BOM `2026.09.00` ·
 Kotlin `2.4.20` · AGP `9.4.1` · compileSdk 37 · minSdk 30.
 
 ## Moduler
@@ -39,8 +39,8 @@ dependencyResolutionManagement {
 }
 ```
 
-och i versionskatalogen/byggfilen `implementation("se.partee71.ui:ui-components:0.8.0")` och
-`testImplementation("se.partee71.ui:ui-testing:0.8.0")`.
+och i versionskatalogen/byggfilen `implementation("se.partee71.ui:ui-components:0.9.0")` och
+`testImplementation("se.partee71.ui:ui-testing:0.9.0")`.
 
 - **CI i appen:** `GITHUB_TOKEN` räcker när paketet gett apprepot läsåtkomst
   (paketets inställningar → *Manage Actions access*) och jobbet har `permissions: packages: read`.
@@ -118,10 +118,10 @@ EntityListScreen(title, state: ListUiState<T>, empty: EmptyContent, add: AddActi
     errorTitle = null, row)
 EntityEditScreen(title, state: EditorUiState<*>, events: EditorEvents, onSave, onClose, …,
     saveLabel, onArchive, onRestore, delete: DeleteAction?, onRetry, onSaved = onClose, formError,
-    horizontalMargin = Spacing.xl, content)
+    horizontalMargin = LocalEditScreenMargin.current, content)
 EntityDetailScreen(state: DetailUiState<T>, header: ((T) -> DetailHeader)?, onBack: (() -> Unit)?, …,
     title, onEdit, menu, onRetry, error: UiError?, onErrorShown, subtitle, actions, snackbar,
-    sectionGap = Spacing.m, leading, refreshing = false, onRefresh = null, content)
+    sectionGap = LocalDetailSectionGap.current, leading, refreshing = false, onRefresh = null, content)
 ```
 
 | Skillnad mellan apparna | Parameter | ReseApoteket | Dagboken |
@@ -130,11 +130,11 @@ EntityDetailScreen(state: DetailUiState<T>, header: ((T) -> DetailHeader)?, onBa
 | Kolumner | `ListGroup.columns` är ett tak; så många kolumner om minst 260 dp som får plats används | som förut | nytt: en kolumn på telefon |
 | Filter, sidfot, postkort, räknare | `filter`, `footer`, `ListGroup.cards`, `ListGroup.showCount`, `topBarSize` | – | som förut |
 | Arkiveringsfel | `ListArchive.error: UiError` | som förut | förr `failure: Failure` |
-| Formulärets sidomarginal | `horizontalMargin` | `Spacing.xl` (standard) | `Spacing.l` |
+| Formulärets sidomarginal | `horizontalMargin`, standard `LocalEditScreenMargin` (sätts en gång i appens tema) | `Spacing.xl` (standard) | `Spacing.l` |
 | Formulärfel överst | `formError` | – | som förut |
 | Tangentbordet | `imePadding` före `verticalScroll` (fältet hamnar ovanför tangentbordet) | nytt | som förut |
 | Detaljens flikläge | `onBack = null`: stor topprad som fälls ihop, `title`, `subtitle`, `actions`, `snackbar`, plats för verktygsraden | – | som förut |
-| Detaljens avstånd mellan sektioner | `sectionGap` | `Spacing.m` (standard) | `Spacing.l` |
+| Detaljens avstånd mellan sektioner | `sectionGap`, standard `LocalDetailSectionGap` (sätts en gång i appens tema) | `Spacing.m` (standard) | `Spacing.l` |
 | Hopfällbar grupp | rubriken minst 48 dp, läses som knapp ("Fäll ut"/"Fäll ihop"), chevronen fjädrar | nytt | som förut |
 | Knappar i tomt läge utan lägg till | `EmptyContent.actions: List<EmptyAction>` (standard inga); står under lägg till-knappen, eller ensamma med `add = null` | – | – (Fonder: flikarna med plusmeny, "Ny transaktion" + "Importera avräkningsnota") |
 | Läsfelets rubrik | `errorTitle` (standard `null` = "Kunde inte hämta listan") | – | – |
@@ -192,6 +192,7 @@ inte använder ramen rätt.
 | `AppTopBar` | Skärmrubriken, stor eller liten; tillbakapilen `TopBarBackStyle(variant, tone)` via `LocalTopBarBackStyle` (eller parametern `backStyle`), som också ramarna följer | Synkindikatorn är appens: den sätts som `LocalTopBarStatus` (eller parametern `status`). Standardpilen är den tonade plattan; Fonder: `TopBarBackStyle(variant = IconButtonVariant.Plain)` |
 | `CardSegment` | Ett segment i ett sammanfogat kort (`top`, `bottom`), `contentColor`, `onClick`, `style`; med kontur delar bitarna skiljelinje | Ersätter Fonders `AppCardGroupPosition` |
 | `CheckRow` | Kryssrad med morfande kryss; `onClick` (krysset blir egen knapp), `accent`, `note`, `menu` (långtryck + ⋮, går före bubblan), `below`, `enabled`, `done`/`tinted` (standard `checked`: överstruken och tonad) | Dagbokens `note`, `menu`, `below`, `enabled`; Fonder `done = false, tinted = false` för "ta med" |
+| `CollapsibleHeader` | Titelraden i det som fälls ihop: hela raden växlar, minst 48 dp, läses som knapp ("Fäll ut"/"Fäll ihop") med läget som `stateDescription`, chevronen sist fjädrar ett halvt varv. `expandLabels(expanded)` (`ExpandLabels`: `action`, `state`) och `chevronRotation(expanded)` för egna chevronknappar | Var intern (hopfällbara grupper i listramen); ersätter Dagbokens `CollapsibleHeader`, `expandLabels` och `chevronRotation` |
 | `ChipRow` | En rad chips som bryts eller rullar | – |
 | `ChoiceChips` | Ett val av flera som chips; `onClear` (Dagboken). Överlagring för flerval (`selected: Set<T>`, `onToggle`) | Flervalet är nytt (Dagboken #321) |
 | `ChoiceGrid` | Val i ett rutnät med egen cell; `selectionRing` (Dagboken: ring i primärfärg) | – |
@@ -221,15 +222,21 @@ inte använder ramen rätt.
 | `NoteIndicator` | Anteckningsikon som visar anteckningen i en dialog | – |
 | `PausableRow` | Rad som kan pausas: typ som pill, nedtonad "Pausat"; `pillTone` krävs | Tonen är appens (ReseApoteket `Tone.Blue`, Dagboken `Tone.Neutral`) |
 | `PickerField` | Fält som öppnar en väljare; `emptyLabel`, `contentLabel` | – |
-| `QuantityStepper` | − värde +; `step`, `valueText`, `buttonSize` (`QuantityStepperDefaults.ButtonSize` 44 dp, `TouchTargetButtonSize` 48 dp) | – |
+| `QuantityStepper` | − värde +; `step`, `valueText`, `buttonSize` (standard `LocalQuantityStepperButtonSize`: `QuantityStepperDefaults.ButtonSize` 44 dp, `TouchTargetButtonSize` 48 dp) | Dagboken sätter `TouchTargetButtonSize` en gång i sitt tema |
 | `SectionHeader` | Sektionsrubrik med antal; `countTone`; laddningsindikator med `working` | – |
 | `SuggestionField` | Textfält med förslag (`Suggestion`) i ett kort under, antalet läses upp | – |
-| `SwipeToHide` | Arkivera/dölj med svep åt vänster, och samma åtgärd för TalkBack | – |
+| `SwipeBackground` | Det som syns bakom en svept rad: `icon` och `label` i högerkanten, `colors` (`ToneColors`, standard primärtonen), `shape` (standard `row`) | Ersätter bakgrunden i Dagbokens `SwipeToDelete` (`ic_delete`, felfärgen, `card`) |
+| `SwipeToHide` | Arkivera/dölj med svep åt vänster, och samma åtgärd för TalkBack; bakgrunden är `SwipeBackground` med `icon` och `colors` (standard arkivera i primärtonen) | – |
 | `SwitchControl` | Själva växeln, för appens kort med reglage; `enabled` | – |
 | `SwitchRow` | Inställningsrad med växel; `onClick` (växeln blir egen kontroll), `inactive` (tonar ned texten, inte växeln), `enabled` (låser växeln) | Dagbokens `inactive`; Fonders `enabled` |
 | `TimeField` | Tidsfält (kotlinx `LocalTime`) som öppnar `TimePickerPopup` | – |
 | `TimePickerPopup` | Tidsväljaren som dialog | – |
 | `UndoSnackbar` | "Arkiverad – Ångra" för `UndoRequest`; `format`, `onRequestDismissed` | – |
+
+**Modifierare:** `Modifier.longPress(label, onLongPress, haptic = false, semantics = LongPressSemantics.LongClick)` –
+långtryck ovanpå en yta vars klick ägs av något annat (`AppFilterChip`, Dagbokens känslor): avbryts av
+rörelse, tar resten av gesten efter långtrycket, `haptic` ger en puls, TalkBack får långtrycksåtgärden
+(`LongClick`) eller en anpassad åtgärd (`CustomAction`); `onLongPress = null` gör ingenting.
 
 Strängarna (svenska) och ikonerna ligger i `ui-components/src/main/res`. En app som har en
 resurs med samma namn (t.ex. `ic_add` eller `more_options`) ersätter bibliotekets – så behåller
@@ -260,6 +267,7 @@ pusha taggar och använder därför den manuella vägen.
 
 | Version | Ändring |
 |---|---|
+| 0.9.0 | Det Dagboken har egna kopior av blir publikt: `CollapsibleHeader`, `expandLabels`/`ExpandLabels` och `chevronRotation`; `Modifier.longPress` med `haptic` och `LongPressSemantics` (och en gest som inte startar om när lambdan byts); `SwipeBackground` och `SwipeToHide` `icon`/`colors`; `LocalEditScreenMargin`, `LocalDetailSectionGap` och `LocalQuantityStepperButtonSize` som standard för `horizontalMargin`, `sectionGap` och `buttonSize`. Standardvärdena bevarar utseendet |
 | 0.8.0 | `SectionHeader.working` (och `workingDescription`): laddningsindikator efter rubriken medan sektionen hämtar data – för Fonders avsnittsrubriker. Standardvärdet bevarar utseendet |
 | 0.7.0 | För Fonders flikar: knappar i tomt läge utan lägg till (`EmptyAction`, `EmptyContent.actions`, `EmptyState.actions`), egen felrubrik i listan (`EntityListScreen.errorTitle`), tillbakapilens stil (`TopBarBackStyle` via `LocalTopBarBackStyle` / `AppTopBar.backStyle`) och `AppIconButton.tone`; listkontraktet prövar `emptyActions` och `errorTitle`. Standardvärdena bevarar utseendet |
 | 0.6.0 | Det Fonder behöver för att byta till biblioteket utan att ändra utseende: `ButtonVariant.Outlined`, `AppButton.contentDescription` och knappstilen `AppButtonStyle` (höjd, formmorf, tonad färg) via `LocalAppButtonStyle`; `AppCard.onClick` och kortstilen `AppCardStyle` (kontur, luft, delad kontur mellan bitar) via `LocalAppCardStyle`; `ItemRow` `overline`/`titleStyle`; `CheckRow` `done`/`tinted`; `SwitchRow.enabled`; `InfoPill` `shape`/`contentDescription`; `ToolbarItem.badgeCount`; dra för att uppdatera (`refreshing`/`onRefresh`) i `EntityListScreen` och `EntityDetailScreen`. Standardvärdena bevarar utseendet |
