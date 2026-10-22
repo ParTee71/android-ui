@@ -51,8 +51,8 @@ private enum class AfterDiscard { Close, Archive, Restore }
  * - bakåt (pilen och systemets bakåt) med osparade ändringar → [DiscardChangesDialog] – likaså
  *   arkivera/återställ, som stänger formuläret utan att spara fälten;
  * - sparfel → snackbar med felets text ([EditorUiState.failure]); lyckad sparning → [onSaved];
- * - arkivera/återställ/radera i menyn när [onArchive]/[onRestore]/[delete] finns; radering alltid
- *   bekräftad med [DeleteConfirmDialog];
+ * - arkivera/återställ/radera i menyn när [onArchive]/[onRestore]/[delete] finns och det lagrade är
+ *   läst; radering alltid bekräftad med [DeleteConfirmDialog];
  * - läsfel → [LoadErrorState] med "Försök igen" ([onRetry]);
  * - [formError] överst i formuläret: ett fel som inte hör till ett synligt fält (t.ex. ett värde som
  *   datalagret nekar);
@@ -134,7 +134,8 @@ fun EntityEditScreen(
                     onRestore?.let { AppMenuItem(stringResource(R.string.restore), { askFirst(AfterDiscard.Restore) }, R.drawable.ic_unarchive) },
                     delete?.let { AppMenuItem(stringResource(R.string.delete), { confirmDelete = true }, R.drawable.ic_delete, destructive = true) }
                 )
-                if (menu.isNotEmpty()) AppMenu(menu)
+                // Medan det lagrade laddas, eller inte gick att läsa, finns inget att arkivera eller radera.
+                if (menu.isNotEmpty() && !state.loading && state.loadError == null) AppMenu(menu)
             }
         },
         snackbarHost = { AppSnackbarHost(snackbar) }

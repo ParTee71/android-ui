@@ -1,6 +1,7 @@
 package se.partee71.ui.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
@@ -16,6 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
@@ -94,6 +97,20 @@ class GestureBehaviorTest {
         assertEquals(1 to 0, presses to clicks)
         rule.onNodeWithTag(TAG).performClick()
         assertEquals(1 to 1, presses to clicks)
+    }
+
+    @Test
+    fun `en gest som komponenten själv förbrukar blir inget långtryck`() {
+        var presses = 0
+        val consumeMoves = Modifier.pointerInput(Unit) { awaitEachGesture { while (awaitPointerEvent().changes.onEach { if (it.positionChanged()) it.consume() }.any { it.pressed }) Unit } }
+        show { Box(Modifier.size(SIZE).testTag(TAG).longPress("Fler val", { presses++ }).then(consumeMoves)) }
+        rule.onNodeWithTag(TAG).performTouchInput {
+            down(center)
+            moveBy(Offset(1f, 0f))
+            advanceEventTime(LONG_PRESS_MILLIS)
+            up()
+        }
+        assertEquals(0, presses)
     }
 
     @Test

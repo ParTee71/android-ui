@@ -6,6 +6,8 @@ import androidx.compose.runtime.Stable
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableMap
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -115,7 +117,11 @@ class EditorState<T>(
      * som i [load].
      */
     suspend fun loadFrom(read: suspend () -> Result<T?>, showInvalid: Boolean = false, prepare: (T) -> T = { it }) {
-        read()
+        val result = read()
+        // Avbröts läsningen (t.ex. av "Försök igen") är resultatet inget läsfel, även om [read] gjort
+        // avbrottet till ett Result (runCatching): den nyare läsningen gäller.
+        currentCoroutineContext().ensureActive()
+        result
             .onSuccess { stored -> if (stored == null) loadFailed(errors.notFound()) else load(prepare(stored), showInvalid) }
             .onFailure { loadFailed(it) }
     }

@@ -123,6 +123,22 @@ class MessageBehaviorTest {
     }
 
     @Test
+    fun `ångra som väntar bakom ett annat meddelande får sina fem sekunder när det syns`() {
+        var dismissed = 0
+        show { host ->
+            MessageSnackbar("Alvedon 500 mg loggad", host) {}
+            UndoSnackbar(UndoRequest("1", "Solkräm"), host, onUndo = {}, onDismissed = { dismissed++ })
+        }
+        settle(SHORT_SNACKBAR_MILLIS)
+        rule.onNodeWithText("Solkräm arkiverad").assertExists()
+        // Bekräftelsen syntes i 4 s, så fem sekunder från början har gått – men ångra har bara synts i ungefär en.
+        settle(UNDO_MILLIS - 2 * SNACKBAR_ANIMATION_MILLIS)
+        assertEquals(0, dismissed, "väntetiden räknas inte")
+        settle(2 * SNACKBAR_ANIMATION_MILLIS + FRAME_MILLIS)
+        assertEquals(1, dismissed)
+    }
+
+    @Test
     fun `att lämna skärmen medan ångra erbjuds räknas som att det gick ut`() {
         var visible by mutableStateOf(true)
         var dismissed = 0

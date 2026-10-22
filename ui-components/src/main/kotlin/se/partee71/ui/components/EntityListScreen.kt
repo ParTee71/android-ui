@@ -215,6 +215,12 @@ private fun <T> ListContent(
     row: @Composable (T) -> Unit
 ) {
     val groups = remember(items, group) { if (group == null) listOf(null to items) else items.groupBy(group).toList() }
+    // Gruppens nyckel är dess rubrik och ordningsnummer: två grupper med samma rubrik (men t.ex. olika
+    // räknare) får inte samma nyckel i listan.
+    val ids = remember(groups) {
+        val seen = mutableMapOf<String, Int>()
+        groups.map { (head, _) -> head?.let { "${it.title}#${seen.merge(it.title, 1, Int::plus)}" } }
+    }
     // Utfällda grupper (bara de hopfällbara), efter rubrik; står kvar efter rotation och tillbaka.
     var expanded by rememberSaveable { mutableStateOf(emptyList<String>()) }
     BoxWithConstraints(Modifier.fillMaxSize()) {
@@ -230,13 +236,13 @@ private fun <T> ListContent(
                 if (index > 0) item(key = "gap:$index", contentType = "gap") { Spacer(Modifier.height(Spacing.m)) }
                 val open = head == null || !head.collapsible || head.title in expanded
                 head?.let {
-                    item(key = "header:${it.title}", contentType = "group-header") {
+                    item(key = "header:${ids[index]}", contentType = "group-header") {
                         Segment(it.cards, top = true, bottom = !open, Modifier.animateItem(), first = true) {
                             GroupHeader(it, rows.size, open) { expanded = if (open) expanded - it.title else expanded + it.title }
                         }
                     }
                 }
-                if (open) groupRows(head, rows, key, subgroup, fitting, row)
+                if (open) groupRows(head, ids[index], rows, key, subgroup, fitting, row)
             }
             footer?.let { item(key = "list-footer", contentType = "list-footer") { Box(Modifier.padding(top = Spacing.m)) { it() } } }
         }
@@ -246,6 +252,7 @@ private fun <T> ListContent(
 /** Raderna i en grupp: undergrupper med rubrik, och i [ListGroup.columns] kolumner – högst [fitting]. */
 private fun <T> LazyListScope.groupRows(
     head: ListGroup?,
+    groupId: String?,
     rows: List<T>,
     key: (T) -> Any,
     subgroup: ((T) -> ListSubgroup?)?,
@@ -266,7 +273,7 @@ private fun <T> LazyListScope.groupRows(
         val top = head == null && position == 0
         val bottom = position == lines.lastIndex
         when (line) {
-            is Line.Label -> item(key = "sub:${head?.title}:${line.id}", contentType = "subgroup") {
+            is Line.Label -> item(key = "sub:$groupId:${line.id}", contentType = "subgroup") {
                 Segment(cards, top = top, bottom = bottom, Modifier.animateItem()) { SubgroupLabel(line.subgroup) }
             }
 
