@@ -4,7 +4,8 @@
 > `:ui-theme` (tema-API), `:ui-common` (list-, detalj- och formulärtillstånd, fel-API),
 > `:ui-components` (komponenterna och ramarna) och `:ui-testing` (ramarnas kontraktstester för
 > apparnas skärmar). Publiceras till GitHub Packages.
-> Vad som finns och hur en app använder det: [README.md](README.md).
+> Vad som finns och hur en app använder det: [README.md](README.md). Repodetaljerna som pluginens
+> skills och agenter slår upp (basgren `main`, kontroller, publicering): skill `android-projekt`.
 
 Pluginen **android@claude-android** gäller här som i apparna (android-dev, compose-expert,
 accessibility-compose, android-gradle-logic, implement-issue, refine-issue, release).
