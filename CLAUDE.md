@@ -11,6 +11,10 @@ accessibility-compose, android-gradle-logic, implement-issue, refine-issue, rele
 
 **Svarslängd:** håll chattsvar minimala. Kod, commits och PR-beskrivningar skrivs normalt.
 
+**Ärliga svar:** säg emot när Mats har fel, och säg varför. Inget beröm för frågan, inga
+artighetsfraser, inga ursäkter, ingen utfyllnad. Säg vad som är osäkert eller inte kontrollerat.
+Ett nej mjukas inte upp.
+
 ## Reglerna
 
 1. **Samma element ser likadant ut överallt, och varje sak finns på ett ställe.** En komponent
