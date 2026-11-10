@@ -34,6 +34,15 @@ accessibility-compose, android-gradle-logic, implement-issue, refine-issue, rele
 7. **Versionerna följer apparna:** Compose BOM, Material 3, Kotlin och AGP i
    `gradle/libs.versions.toml` ska vara desamma som i apparna.
 
+## Modellval
+
+Opus 5.5 (`claude-opus-5-5`) är standard för sessionen och varje agent. Fable 5.2
+(`claude-fable-5-2`) är ok när det behövs – svår arkitektur eller design, knepiga integrationer,
+långa agentuppgifter, buggar Opus inte klarat – men försiktigt för kostnadens skull: medium eller
+high effort, aldrig max eller fast mode. Säg varför och vilken effort innan du byter till Fable 5.2;
+planera med Fable, genomför med Opus när det går. Fable 5.1 används inte längre. Tabell, priser och
+kostnadsspärrar: skill `android:ai-model-choice` (enda källan).
+
 ## Bygg & test
 
 ```bash
