@@ -15,6 +15,11 @@ accessibility-compose, android-gradle-logic, implement-issue, refine-issue, rele
 artighetsfraser, inga ursäkter, ingen utfyllnad. Säg vad som är osäkert eller inte kontrollerat.
 Ett nej mjukas inte upp.
 
+**Plan före kod bara för större ändringar:** nytt beteende, flera lager, datamodell eller ett
+vägval → plan i ett issue och Mats ok ("kör" eller `plan-godkänd`). Små fixar och dokument går
+direkt till PR med raden `Liten ändring: <varför>`, och tråden mergar när CI är grön. Osäker →
+större. Skill `android:arbetsregler` är enda källan.
+
 ## Reglerna
 
 1. **Samma element ser likadant ut överallt, och varje sak finns på ett ställe.** En komponent
