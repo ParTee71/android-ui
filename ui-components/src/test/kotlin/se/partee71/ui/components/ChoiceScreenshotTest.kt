@@ -47,6 +47,16 @@ class ChoiceScreenshotTest {
     }
 
     @Test
+    fun `AppFilterChip - långt namn, vanligt och väntande`() = captureLightAndDark("AppFilterChip_langt_namn") {
+        val long = "Ryaltris 25 mikrogram/dos + 600 mikrogram/dos 2 st"
+        SampleSheet {
+            ChipRow { AppFilterChip(long, selected = false, onClick = {}) }
+            ChipRow { AppFilterChip(long, selected = true, onClick = {}, pending = ChipPending(R.drawable.ic_check, "tagen 06:37", "tagen 06:37")) }
+            ChipRow { AppFilterChip(long, selected = false, onClick = {}, pending = ChipPending(R.drawable.ic_clock, "från 15:40", "för tidigt, nästa dos från 15:40")) }
+        }
+    }
+
+    @Test
     fun `ChoiceChips - ett val och flera val`() = captureLightAndDark("ChoiceChips_ett_och_flera") {
         SampleSheet {
             ChoiceChips(listOf("Tablett", "Kapsel", "Kräm", "Droppar"), "Kapsel", {}, label = { it })

@@ -29,6 +29,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import se.partee71.ui.theme.AppTheme
@@ -52,6 +53,9 @@ data class ChipPending(@param:DrawableRes val icon: Int, val text: String, val d
  * [value] står efter etiketten (t.ex. styrkan "4" i "Huvudvärk 4") och läses som en egen del av TalkBack.
  * [emphasized] är det aktiva bland flera valda: fylld primärfärg i stället för `primaryContainer`.
  * [pending] ger det väntande läget ([ChipPending]). Standardvärdena bevarar det vanliga chipet.
+ *
+ * Chipet är alltid en rad högt: en etikett som inte får plats kortas med ellips (hela etiketten läses
+ * fortfarande av TalkBack), och värdet och tilläggstexten bryts aldrig.
  */
 @Composable
 fun AppFilterChip(
@@ -79,10 +83,12 @@ fun AppFilterChip(
             onClick = onClick,
             label = {
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xs), verticalAlignment = Alignment.CenterVertically) {
-                    Text(label, style = AppTheme.typography.pill)
-                    value?.let { Text(it, style = AppTheme.typography.pill) }
+                    // Etiketten tar bara det utrymme som blir över, på en rad: ett långt namn kortas med ellips
+                    // i stället för att trycka ihop värdet eller tilläggstexten och göra chipet högre.
+                    Text(label, style = AppTheme.typography.pill, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
+                    value?.let { Text(it, style = AppTheme.typography.pill, maxLines = 1, softWrap = false) }
                     // Den synliga tilläggstexten ersätts för TalkBack av den fullständiga beskrivningen.
-                    pending?.let { Text(it.text, style = AppTheme.typography.pill, modifier = Modifier.clearAndSetSemantics { }) }
+                    pending?.let { Text(it.text, style = AppTheme.typography.pill, maxLines = 1, softWrap = false, modifier = Modifier.clearAndSetSemantics { }) }
                 }
             },
             modifier = chipModifier,
