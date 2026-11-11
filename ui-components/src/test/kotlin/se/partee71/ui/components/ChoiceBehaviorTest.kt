@@ -1,10 +1,13 @@
 package se.partee71.ui.components
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -20,6 +23,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.unit.dp
 import kotlin.test.assertEquals
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
@@ -82,6 +86,23 @@ class ChoiceBehaviorTest {
         node.assert(SemanticsMatcher.expectValue(SemanticsProperties.Text, listOf(AnnotatedString("Ipren 400 mg"))))
         node.performClick()
         assertEquals(1, clicks)
+    }
+
+    @Test
+    fun `ett långt namn växer inte chipet, varken vanligt eller väntande`() {
+        val long = "Ryaltris 25 mikrogram/dos + 600 mikrogram/dos 2 st"
+        val pending = ChipPending(R.drawable.ic_check, "tagen 06:37", "tagen 06:37")
+        show {
+            Column(Modifier.width(320.dp)) {
+                ChipRow { AppFilterChip("Kort", selected = false, onClick = {}) }
+                ChipRow { AppFilterChip(long, selected = false, onClick = {}) }
+                ChipRow { AppFilterChip(long, selected = true, onClick = {}, pending = pending) }
+            }
+        }
+        val single = rule.onNodeWithText("Kort").getBoundsInRoot().let { it.bottom - it.top }
+        rule.onAllNodesWithText(long).fetchSemanticsNodes().forEach { node ->
+            assertEquals(single, with(rule.density) { node.size.height.toDp() }, "chipets höjd")
+        }
     }
 
     @Test
