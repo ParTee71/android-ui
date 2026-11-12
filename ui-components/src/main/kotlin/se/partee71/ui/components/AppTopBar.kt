@@ -50,12 +50,14 @@ val LocalTopBarBackStyle = staticCompositionLocalOf { TopBarBackStyle() }
  * Skärmrubriken. [onBack] ger en tillbakaknapp; [actions] står till höger (t.ex. `AppMenu`).
  * [scrollBehavior] kopplas av ramarna (`EntityListScreen`, `EntityEditScreen`).
  * Före [actions] står [status] – standard det appen satt i [LocalTopBarStatus]. Pilens utseende är
- * [backStyle] – standard det appen satt i [LocalTopBarBackStyle].
+ * [backStyle] – standard det appen satt i [LocalTopBarBackStyle]. [titleModifier] läggs på rubrikens text
+ * (efter rubriksemantiken), t.ex. för att en app ska kunna göra rubriken kopierbar; standard ingenting.
  */
 @Composable
 fun AppTopBar(
     title: String,
     modifier: Modifier = Modifier,
+    titleModifier: Modifier = Modifier,
     size: TopBarSize = TopBarSize.Large,
     subtitle: String? = null,
     onBack: (() -> Unit)? = null,
@@ -69,7 +71,7 @@ fun AppTopBar(
     val navigation: @Composable () -> Unit = {
         onBack?.let { AppIconButton(R.drawable.ic_arrow_back, stringResource(R.string.back), it, variant = backStyle.variant, tone = backStyle.tone) }
     }
-    val heading = Modifier.semantics { heading() }
+    val heading = Modifier.semantics { heading() }.then(titleModifier)
     val allActions: @Composable RowScope.() -> Unit = {
         status()
         actions()

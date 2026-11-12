@@ -57,6 +57,8 @@ data class DetailHeader(val title: String, val subtitle: String? = null)
  * bekräftelser) i samma yta som felen. Med [onRefresh] dras skärmen ned för att uppdatera, med indikatorn
  * överst så länge [refreshing] är sant; utan (standard) finns ingen gest.
  *
+ * [titleModifier] läggs på toppradens rubrik (se [AppTopBar]).
+ *
  * @param header vad huvudet visar för ett laddat värde; `null` = inget huvud.
  * @param menu valen i "Fler val" (arkivera/återställ m.m.) för ett laddat värde.
  */
@@ -66,6 +68,7 @@ fun <T> EntityDetailScreen(
     header: ((T) -> DetailHeader)?,
     onBack: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    titleModifier: Modifier = Modifier,
     title: String? = null,
     onEdit: (() -> Unit)? = null,
     menu: (T) -> List<AppMenuItem> = { emptyList() },
@@ -95,7 +98,8 @@ fun <T> EntityDetailScreen(
                 size = if (tab) TopBarSize.Large else TopBarSize.Small,
                 subtitle = subtitle,
                 onBack = onBack,
-                scrollBehavior = if (tab) scroll else null
+                scrollBehavior = if (tab) scroll else null,
+                titleModifier = titleModifier
             ) {
                 actions()
                 if (state is DetailUiState.Content) {

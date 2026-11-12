@@ -5,7 +5,7 @@ eventuellt Fonder): ett tema-API och de delade komponenterna, så att samma elem
 beter sig likadant i alla appar och bara finns på ett ställe. Varje app behåller sina egna
 färger, former och typsnitt och skickar in dem i temat.
 
-**Version:** 0.9.3 · Material 3 `1.5.0-beta01` (Expressive) · Compose BOM `2026.09.00` ·
+**Version:** 0.10.0 · Material 3 `1.5.0-beta01` (Expressive) · Compose BOM `2026.09.00` ·
 Kotlin `2.4.20` · AGP `9.4.1` · compileSdk 37 · minSdk 30.
 
 ## Moduler
@@ -39,8 +39,8 @@ dependencyResolutionManagement {
 }
 ```
 
-och i versionskatalogen/byggfilen `implementation("se.partee71.ui:ui-components:0.9.3")` och
-`testImplementation("se.partee71.ui:ui-testing:0.9.3")`.
+och i versionskatalogen/byggfilen `implementation("se.partee71.ui:ui-components:0.10.0")` och
+`testImplementation("se.partee71.ui:ui-testing:0.10.0")`.
 
 - **CI i appen:** `GITHUB_TOKEN` räcker när paketet gett apprepot läsåtkomst
   (paketets inställningar → *Manage Actions access*) och jobbet har `permissions: packages: read`.
@@ -189,7 +189,7 @@ inte använder ramen rätt.
 | `AppSegmentedChoice` | Ett val av få alternativ som segmentknappar | – |
 | `AppSnackbarHost` | Den enda platsen där meddelanden visas | – |
 | `AppTextField` | Det enda textfältet; `maxLength` (`AppTextFieldDefaults.SHORT_MAX_LENGTH` 200 / `LONG_MAX_LENGTH` 2000), `maxLines`, `suffix`, `valueIsPlaceholder` | Dagboken anger `maxLength = 5000` för långa fält |
-| `AppTopBar` | Skärmrubriken, stor eller liten; tillbakapilen `TopBarBackStyle(variant, tone)` via `LocalTopBarBackStyle` (eller parametern `backStyle`), som också ramarna följer | Synkindikatorn är appens: den sätts som `LocalTopBarStatus` (eller parametern `status`). Standardpilen är den tonade plattan; Fonder: `TopBarBackStyle(variant = IconButtonVariant.Plain)` |
+| `AppTopBar` | Skärmrubriken, stor eller liten; tillbakapilen `TopBarBackStyle(variant, tone)` via `LocalTopBarBackStyle` (eller parametern `backStyle`), som också ramarna följer | Synkindikatorn är appens: den sätts som `LocalTopBarStatus` (eller parametern `status`). `titleModifier` läggs på rubriken (också via `EntityDetailScreen`). Standardpilen är den tonade plattan; Fonder: `TopBarBackStyle(variant = IconButtonVariant.Plain)` |
 | `CardSegment` | Ett segment i ett sammanfogat kort (`top`, `bottom`), `contentColor`, `onClick`, `style`; med kontur delar bitarna skiljelinje | Ersätter Fonders `AppCardGroupPosition` |
 | `CheckRow` | Kryssrad med morfande kryss; `onClick` (krysset blir egen knapp), `accent`, `note`, `menu` (långtryck + ⋮, går före bubblan), `below`, `enabled`, `done`/`tinted` (standard `checked`: överstruken och tonad) | Dagbokens `note`, `menu`, `below`, `enabled`; Fonder `done = false, tinted = false` för "ta med" |
 | `CollapsibleHeader` | Titelraden i det som fälls ihop: hela raden växlar, minst 48 dp, läses som knapp ("Fäll ut"/"Fäll ihop") med läget som `stateDescription`, chevronen sist fjädrar ett halvt varv. `expandLabels(expanded)` (`ExpandLabels`: `action`, `state`) och `chevronRotation(expanded)` för egna chevronknappar | Var intern (hopfällbara grupper i listramen); ersätter Dagbokens `CollapsibleHeader`, `expandLabels` och `chevronRotation` |
@@ -267,6 +267,7 @@ pusha taggar och använder därför den manuella vägen.
 
 | Version | Ändring |
 |---|---|
+| 0.10.0 | `AppTopBar` och `EntityDetailScreen` får `titleModifier`, som läggs på toppradens rubrik (efter rubriksemantiken) – t.ex. för att Fonder ska kunna göra fondnamnet kopierbart. Standard ingenting, utseendet är oförändrat |
 | 0.9.3 | `AppFilterChip` är alltid en rad högt: en lång etikett kortas med ellips i stället för att trycka ihop värdet eller den väntande texten (t.ex. "tagen 06:37") så att chipet blev en hög oval. Korta etiketter ser ut som förut |
 | 0.9.2 | Förenklingar utan ändrat API, beteende eller utseende: en tryckyta (`TOUCH_TARGET`) i stället för fyra egna 48 dp; `EditorState` har en vakt för spara/arkivera/radera; `ListLoader` och `DetailLoader` delar omstart och delning; `QuantityStepper`, chipfärgerna och ångra i `ArchiveActions` utan kopierad kod; `cardSegment` och `card` skapas en gång; `ArchiveActions.visible` sorterar bara när arkiverade visas; `ChoiceGrid` delar inte upp raderna vid varje rekomposition |
 | 0.9.1 | Rättningar från en granskning: Ångra får sina 5 s från att meddelandet syns, inte medan det väntar bakom ett annat; två grupper med samma rubrik kraschar inte listan; "Försök igen" under en pågående läsning visar inte den avbrutna som läsfel; formulärets meny (arkivera, radera) visas först när det lagrade är läst; `Confetti` med tom `colors` tar appens färgserie; `Modifier.longPress` avbryts när komponenten själv förbrukar gesten. Utseendet är oförändrat |
