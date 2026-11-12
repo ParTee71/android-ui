@@ -12,7 +12,9 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
@@ -20,9 +22,11 @@ import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.assertTouchHeightIsEqualTo
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
@@ -124,6 +128,16 @@ class ComponentBehaviorTest {
         rule.onNodeWithText("Solkräm").assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading))
         rule.onNodeWithContentDescription("Tillbaka").performClick()
         assertEquals(1, back)
+    }
+
+    @Test
+    fun `toppradens titleModifier hamnar på rubriken, som förblir rubrik`() {
+        var size by mutableStateOf(TopBarSize.Large)
+        show { AppTopBar("Solkräm", size = size, onBack = {}, titleModifier = Modifier.testTag("titel")) }
+        for (each in TopBarSize.entries) {
+            size = each
+            rule.onNodeWithTag("titel").assertTextEquals("Solkräm").assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading))
+        }
     }
 
     @Test

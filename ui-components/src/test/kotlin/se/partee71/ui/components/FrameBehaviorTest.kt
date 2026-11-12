@@ -12,8 +12,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
@@ -374,6 +377,15 @@ class FrameBehaviorTest {
         rule.setContent { TestTheme { EntityDetailScreen(DetailUiState.Content("Förkylning"), header = null, onBack = { back++ }, title = "Tema") { ItemRow(it) } } }
         rule.onNodeWithText("Tema").assertIsDisplayed()
         rule.onNodeWithText("Förkylning").assertIsDisplayed()
+        rule.onNodeWithContentDescription("Tillbaka").performClick()
+        assertEquals(1, back)
+    }
+
+    @Test
+    fun `detaljens titleModifier hamnar på toppradens rubrik`() {
+        var back = 0
+        rule.setContent { TestTheme { EntityDetailScreen(DetailUiState.Content("Förkylning"), header = null, onBack = { back++ }, title = "Tema", titleModifier = Modifier.testTag("titel")) { ItemRow(it) } } }
+        rule.onNodeWithTag("titel").assertTextEquals("Tema")
         rule.onNodeWithContentDescription("Tillbaka").performClick()
         assertEquals(1, back)
     }
