@@ -1,6 +1,6 @@
 ---
 name: android-projekt
-description: android-ui:s repodetaljer för pluginens skills och agenter (android:implement-issue, android:refine-issue, android:release, agenten android:granskare) – repo, basgren, vad som körs före push, granskning, versionshöjning och publicering till GitHub Packages. Ladda tillsammans med en android:-skill när arbetet gäller biblioteket. Trigger-ord: android-ui, komponent, bibliotek, publicera, GitHub Packages, version, release, PR, granskning, issue.
+description: "android-ui:s repodetaljer för pluginens skills och agenter (android:implement-issue, android:refine-issue, android:release, agenten android:granskare) – repo, basgren, vad som körs före push, granskning, versionshöjning och publicering till GitHub Packages. Ladda tillsammans med en android:-skill när arbetet gäller biblioteket. Trigger-ord: android-ui, komponent, bibliotek, publicera, GitHub Packages, version, release, PR, granskning, issue."
 ---
 
 # android-ui – repodetaljer
